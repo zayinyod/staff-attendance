@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Clock{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/form.css' %}">{% endblock %}
+{% block body %}
+
+<div class="main">
+  <form method="POST">
+    <h2>Clock in or out?</h2>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <div class="form-group">
+        {{ field }}
+        {{ field.errors }}
+    </div>
+    {% endfor %}
+    <p><button class="btn" type="submit">Clock</button></p>
+    <a class="reset" href="{% url 'login' %}">✚</a>
+  </form>
+</div>
+
+{% endblock %}

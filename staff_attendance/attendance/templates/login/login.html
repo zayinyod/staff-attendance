@@ -1,4 +1,7 @@
-{% extends "staff_attendance/base.html" %}
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
 {% block body %}
 
 <div class="main">
@@ -8,7 +11,9 @@
       <input class="input" type="text" placeholder="user id">
       <input class="input" type="password" placeholder="password">
       <p><a class="btn" href="{% url 'clock' %}">Log in</a></p>
-      <a class="reset" href="#">forgotten password?</a>
+      <a class="reset" href="#">Forgotten password?</a>
+      <br><span></span><br>
+      <a class="signup" href="{% url 'user_entry' %}">Not a member? Click here.</a>
     </div>
   </form>
 </div>

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views import View
 
-class LogIn(View):
+class Login(View):
     def get(self, request):
-        return render(request, "staff_attendance/login.html")
+        return render(request, "login/login.html")

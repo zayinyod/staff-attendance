@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css?family=Playfair+Display&display=swap');
+
+body {
+  font-family: 'Playfair Display', serif;
+  color: #1e1e28;
+  letter-spacing: 0.5px;
+}
+
+.header {
+  margin: 0 auto;
+  width: 80%;
+  height: 10vh;
+  padding: 0.5rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main {
+  max-width: 80%;
+  margin: 0 auto;
+  text-align: center;
+  padding-top: 5rem;
+}
+
+form {
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  height: 480px;
+  width: 400px;
+  box-shadow: 0 0 40px rgba(8,7,16,0.6);
+  padding: 50px 35px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 2rem;
+  padding: 0.5rem 4rem;
+}
+
+p {
+  font-size: 1.15rem;
+  line-height: 1.5;
+}
+
+h1, p {
+  margin-bottom: 1rem;
+}
+
+label {
+  font-size: 0.8rem;
+}
+
+.clockwork_orange {
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.input {
+  background-color: transparent;
+  border: 0.25px solid #339999;
+  border-radius: 5px;
+  padding: 10px 10px 10px 14px;
+  margin: 10px 10px 0 10px;
+  outline: none;
+  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.btn {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+  background: #0bd;
+  padding: 10px 85px;
+  border-radius: 5px;
+  border: none;
+  display: inline-block;
+  color: #1e1e28;
+  text-decoration: none;
+  margin-top: 1rem;
+  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.reset {
+  font-size: 0.8rem;
+  color: #1e1e28;
+  text-decoration: none;
+  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.input:hover {
+  color: #f7f4e9;
+  background-color: #100f2c;
+  padding: 10px 10px 10px 50px;
+}
+
+.btn:hover {
+  color: #f7f4e9;
+  background-color: #100f2c;
+}
+
+.reset:hover {
+  color: #ff4422;
+}
+
+.signup {
+  font-size: 0.8rem;
+  color: #1e1e28;
+  text-decoration: none;
+  text-decoration-color: transparent;
+  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.signup:hover {
+  color: #ff4422;
+  text-decoration: underline;
+  text-decoration-color: currentColor;
+}

@@ -1,0 +1,14 @@
+from attendance.models import Clock
+from .domains import ClockDomain
+
+class ClockRepository:
+    def save(self, clock_entry: ClockDomain):
+        clock = Clock(
+            user=clock_entry.user,
+            date_stamp=clock_entry.date_stamp,
+            time_stamp=clock_entry.time_stamp,
+            clock=clock_entry.clock,
+            break_time=clock_entry.break_time,
+            location=clock_entry.location,
+        )
+        clock.save()

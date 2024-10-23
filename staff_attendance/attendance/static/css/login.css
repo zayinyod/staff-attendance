@@ -47,23 +47,33 @@ h1, p {
   margin-bottom: 1rem;
 }
 
-input {
+label {
+  font-size: 0.8rem;
+}
+
+.clockwork_orange {
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.input {
   background-color: transparent;
   border: 0.25px solid #339999;
+  border-radius: 5px;
   padding: 10px 10px 10px 14px;
   margin: 10px 10px 0 10px;
   outline: none;
   transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-.input {
-  border-radius: 5px;
-}
-
 .btn {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
   background: #0bd;
   padding: 10px 85px;
   border-radius: 5px;
+  border: none;
   display: inline-block;
   color: #1e1e28;
   text-decoration: none;
@@ -78,7 +88,7 @@ input {
   transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
-input:hover {
+.input:hover {
   color: #f7f4e9;
   background-color: #100f2c;
   padding: 10px 10px 10px 50px;
@@ -91,4 +101,18 @@ input:hover {
 
 .reset:hover {
   color: #ff4422;
+}
+
+.signup {
+  font-size: 0.8rem;
+  color: #1e1e28;
+  text-decoration: none;
+  text-decoration-color: transparent;
+  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.signup:hover {
+  color: #ff4422;
+  text-decoration: underline;
+  text-decoration-color: currentColor;
 }
