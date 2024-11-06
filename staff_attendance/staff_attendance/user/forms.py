@@ -6,8 +6,16 @@ from attendance.models import Department
 User = get_user_model()
 
 class UserEntryForm(UserCreationForm):
-    email = forms.EmailField(label="your email", required=True)
-    department = forms.ModelChoiceField(queryset=Department.objects.all(), label="your department", required=True)
+    email = forms.EmailField(
+        label="your email",
+        required=True,
+    )
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),
+        label="your department",
+        required=True,
+        empty_label="select department",
+    )
 
     class Meta:
         model = User
@@ -18,8 +26,11 @@ class UserEntryForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(UserEntryForm, self).__init__(*args, **kwargs)
-        self.fields['password1'].label = 'password'
-        self.fields['password2'].label = 'password again'
+
+        self.fields["password1"].label = "password"
+        self.fields["password2"].label = "password again"
+        self.fields["department"].label_from_instance = lambda obj: obj.name
+
         for field in self.fields.values():
             field.widget.attrs.update({
                 "class": "input",

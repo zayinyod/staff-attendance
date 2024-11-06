@@ -7,16 +7,17 @@
 <div class="main">
   <form method="POST">
     <h2>Sign in</h2>
+    <p class="description">Please fill out the form below.</p>
     {% csrf_token %}
     {{ form.non_field_errors }}
     {% for field in form %}
-    <div class="form-group">
-        {{ field }}
-        {{ field.errors }}
+    <div class="field">
+      {{ field }}
+      {{ field.errors }}
     </div>
     {% endfor %}
     <p><button class="btn" type="submit">Entry</button></p>
-    <a class="reset" href="{% url 'login' %}">✚</a>
+    <a class="link" href="{% url 'login' %}">back</a>
   </form>
 </div>
 

@@ -1,8 +1,12 @@
+from dataclasses import dataclass
+from datetime import date, time
+from decimal import Decimal
+
+@dataclass
 class ClockDomain:
-    def __init__(self, user, date_stamp, time_stamp, clock, break_time, location):
-        self.user = user
-        self.date_stamp = date_stamp
-        self.time_stamp = time_stamp
-        self.clock = clock
-        self.break_time = break_time
-        self.location = location
+    user: str = None
+    date_stamp: date = None
+    time_stamp: time = None
+    clock: str = None
+    break_time: Decimal = None
+    location: str = None
