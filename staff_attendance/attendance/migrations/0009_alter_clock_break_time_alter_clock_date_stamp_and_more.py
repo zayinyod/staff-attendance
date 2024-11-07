@@ -26,14 +26,14 @@ class Migration(migrations.Migration):
             model_name="clock",
             name="date_stamp",
             field=models.DateField(
-                default=attendance.models.Clock.Now.date, verbose_name="date"
+                verbose_name="date"
             ),
         ),
         migrations.AlterField(
             model_name="clock",
             name="time_stamp",
             field=models.TimeField(
-                default=attendance.models.Clock.Now.time, verbose_name="time"
+                verbose_name="time"
             ),
         ),
     ]

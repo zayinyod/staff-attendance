@@ -1,3 +1,4 @@
+from staff_attendance.clock.now import Now
 from attendance.models import Clock
 from .domains import ClockDomain
 
@@ -12,3 +13,11 @@ class ClockRepository:
             location=clock_entry.location,
         )
         clock.save()
+
+    def get_today_in_record(self, user):
+        today = Now.date()
+        return Clock.objects.filter(
+            user=user,
+            date_stamp=today,
+            clock="IN",
+        ).first()

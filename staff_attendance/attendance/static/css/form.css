@@ -1,36 +1,43 @@
 @import url('https://fonts.googleapis.com/css?family=Playfair+Display&display=swap');
 
+:root {
+  --font: 'Playfair Display', serif;
+  --base_color: #1e1e28;
+  --base_margin: 0 auto;
+  --transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
 body {
-  font-family: 'Playfair Display', serif;
-  color: #1e1e28;
+  font-family: var(--font);
   letter-spacing: 0.5px;
+  color: var(--base_color);
 }
 
 .header {
-  margin: 0 auto;
+  margin: var(--base_margin);
+  padding: 0.5rem 4rem;
   width: 80%;
   height: 10vh;
-  padding: 0.5rem 4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .main {
-  max-width: 80%;
-  margin: 0 auto;
-  text-align: center;
+  margin: var(--base_margin);
   padding-top: 5rem;
+  max-width: 80%;
+  text-align: center;
 }
 
 form {
   border: 2px solid rgba(255,255,255,0.1);
   border-radius: 10px;
-  height: 480px;
-  width: 400px;
-  box-shadow: 0 0 40px rgba(8,7,16,0.6);
+  margin: var(--base_margin);
   padding: 50px 35px;
-  margin: 0 auto;
+  width: 400px;
+  height: 550px;
+  box-shadow: 0 0 40px rgba(8,7,16,0.6);
 }
 
 h1 {
@@ -47,71 +54,78 @@ h1, p {
   margin-bottom: 1rem;
 }
 
+.description {
+  font-size: 0.7rem;
+  color: var(--base_color);
+}
+
 label {
   font-size: 0.8rem;
 }
 
-.clockwork_orange {
-  padding: 0;
-  margin-bottom: 1rem;
-}
-
 .input {
-  background-color: transparent;
+  background: transparent;
   border: 0.25px solid #339999;
   border-radius: 5px;
-  padding: 10px 10px 10px 14px;
   margin: 10px 10px 0 10px;
+  padding: 10px 10px 10px 14px;
   outline: none;
-  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.btn {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.15rem;
-  letter-spacing: 0.5px;
-  background: #0bd;
-  padding: 10px 85px;
-  border-radius: 5px;
-  border: none;
-  display: inline-block;
-  color: #1e1e28;
-  text-decoration: none;
-  margin-top: 1rem;
-  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
-}
-
-.reset {
-  font-size: 0.8rem;
-  color: #1e1e28;
-  text-decoration: none;
-  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: var(--transition);
 }
 
 .input:hover {
   color: #f7f4e9;
-  background-color: #100f2c;
+  background: #100f2c;
   padding: 10px 10px 10px 50px;
+}
+
+.error {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ff4422;
+  border: 2px dashed #ff4422;
+  border-radius: 5px;
+  margin: var(--base_margin);
+  margin-top: 0.6rem;
+  width: fit-content;
+  isolation: isolate;
+}
+
+.error p {
+  font-size: 0.7rem;
+  margin: var(--base_margin);
+  padding: 8px 20px;
+}
+
+.btn {
+  font-family: var(--font);
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+  color: var(--base_color);
+  background: #0bd;
+  border: none;
+  border-radius: 5px;
+  margin-top: 1rem;
+  padding: 10px 85px;
+  display: inline-block;
+  text-decoration: none;
+  transition: var(--transition);
 }
 
 .btn:hover {
   color: #f7f4e9;
-  background-color: #100f2c;
+  background: #100f2c;
 }
 
-.reset:hover {
-  color: #ff4422;
-}
-
-.signup {
+.link {
   font-size: 0.8rem;
-  color: #1e1e28;
+  color: var(--base_color);
   text-decoration: none;
   text-decoration-color: transparent;
-  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: var(--transition);
 }
 
-.signup:hover {
+.link:hover {
   color: #ff4422;
   text-decoration: underline;
   text-decoration-color: currentColor;

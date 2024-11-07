@@ -2,13 +2,13 @@ from django import forms
 from django.forms import ModelForm
 from attendance.models import Clock
 from decimal import Decimal
+from .usecases import ClockUseCase
 
 class ClockForm(ModelForm):
     class Meta:
         model = Clock
-        fields = ["user", "date_stamp", "time_stamp", "clock", "break_time", "location"]
+        fields = ["date_stamp", "time_stamp", "clock", "break_time", "location"]
         labels = {
-            "user": "user",
             "date_stamp": "date",
             "time_stamp": "time",
             "clock": "in/out",
@@ -25,7 +25,21 @@ class ClockForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super(ClockForm, self).__init__(*args, **kwargs)
+
+        if self.user:
+            use_case = ClockUseCase(self.user)
+            result = use_case.get_in_breaktime_and_location()
+
+            if result is not None:
+                self.fields["clock"].initial = "OUT"
+                break_time, location = result
+                if break_time is not None:
+                    self.fields["break_time"].initial = break_time
+                if location is not None:
+                    self.fields["location"].initial = location
+
         for field in self.fields.values():
             field.widget.attrs.update({
                 "class": "input",

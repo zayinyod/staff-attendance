@@ -5,15 +5,20 @@
 {% block body %}
 
 <div class="main">
-  <form>
+  <form method="POST" action="{% url 'login' %}">
+    {% csrf_token %}
     <h1>Staff Attendance</h1>
     <div class="certificate">
-      <input class="input" type="text" placeholder="user id">
-      <input class="input" type="password" placeholder="password">
-      <p><a class="btn" href="{% url 'clock' %}">Log in</a></p>
-      <a class="reset" href="#">Forgotten password?</a>
+      <input class="input" type="text" name="username" placeholder="user id" required>
+      <input class="input" type="password" name="password" placeholder="password" required>
+      <input type="hidden" name="next" value="{{ next }}">
+      {% if error %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+      <p><button class="btn" type="submit">Log in</button></p>
+      <a class="link" href="#">Forgotten password?</a>
       <br><span></span><br>
-      <a class="signup" href="{% url 'user_entry' %}">Not a member? Click here.</a>
+      <a class="link" href="{% url 'user_entry' %}">Not a member? Click here.</a>
     </div>
   </form>
 </div>

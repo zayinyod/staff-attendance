@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from decimal import Decimal
+from staff_attendance.clock.now import Now
 
 class Department(models.Model):
     name = models.CharField(max_length=100, verbose_name="department")
@@ -37,44 +38,27 @@ class User(AbstractUser):
         return f"[{self.user_id}] {self.username}"
 
 class Clock(models.Model):
-    class Now:
-        def date(self):
-            jst_date = timezone.localtime().strftime("%Y-%m-%d")
-            return jst_date
-
-        def time(self):
-            jst_time = timezone.localtime().strftime("%H:%M:%S")
-            return jst_time
-    now = Now()
-
-    clock_status = [
-        ("IN", "In"),
-        ("OUT", "Out"),
-    ]
-    location_status = [
-        ("office", "Office"),
-        ("telework", "Telework"),
-    ]
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        default=User,
         on_delete=models.CASCADE,
         related_name="clocks",
         verbose_name="username",
     )
     date_stamp = models.DateField(
-        default=now.date,
+        default=Now.date,
         verbose_name="date",
     )
     time_stamp = models.TimeField(
-        default=now.time,
+        default=Now.time,
         verbose_name="time",
     )
     clock = models.CharField(
         max_length=20,
         default="In",
-        choices=clock_status,
+        choices=[
+            ("IN", "In"),
+            ("OUT", "Out"),
+        ],
         verbose_name="in/out",
     )
     break_time = models.DecimalField(
@@ -86,7 +70,10 @@ class Clock(models.Model):
     location = models.CharField(
         max_length=20,
         default="Office",
-        choices=location_status,
+        choices=[
+            ("office", "Office"),
+            ("telework", "Telework"),
+        ],
         verbose_name="location",
     )
 
