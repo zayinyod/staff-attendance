@@ -29,16 +29,16 @@ class ClockForm(ModelForm):
         super(ClockForm, self).__init__(*args, **kwargs)
 
         if self.user:
-            use_case = ClockUseCase(self.user)
-            result = use_case.get_in_breaktime_and_location()
+            break_time, location, has_in_record = ClockUseCase.get_in_breaktime_and_location(self.user)
 
-            if result is not None:
+            if has_in_record:
                 self.fields["clock"].initial = "OUT"
-                break_time, location = result
                 if break_time is not None:
                     self.fields["break_time"].initial = break_time
                 if location is not None:
                     self.fields["location"].initial = location
+            else:
+                self.fields["clock"].initial = "IN"
 
         for field in self.fields.values():
             field.widget.attrs.update({

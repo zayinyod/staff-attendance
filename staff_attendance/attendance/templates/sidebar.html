@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">{% endblock %}
+{% block body %}
+
+<nav class="sidebar">
+  <ul class="sidebar-menu">
+    <li><a href="#">DASHBOARD</a></li>
+    <li><a href="{% url 'clock' %}">CLOCK</a></li>
+    <li><a href="#">ADMINISTRATION</a></li>
+  </ul>
+  <div class="footer">
+    <a href="{% url 'logout' %}">LOG OUT</a>
+  </div>
+  
+  <div class="toggle-btn">
+    <span></span>
+    <span></span>
+    <span></span>  
+  </div>
+
+  <div id="mask"></div>
+</nav>
+
+<script src="{% static 'js/toggle.js' %}"></script>
+{% endblock %}

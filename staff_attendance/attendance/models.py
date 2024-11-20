@@ -1,10 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.utils.crypto import get_random_string
-from django.utils import timezone
 from decimal import Decimal
-from staff_attendance.clock.now import Now
+from util.now import Now
 
 class Department(models.Model):
     name = models.CharField(max_length=100, verbose_name="department")
@@ -12,16 +10,9 @@ class Department(models.Model):
     def __str__(self):
         return f"[{self.id}] {self.name}"
 
-def create_id():
-    while True:
-        new_id = get_random_string(6)
-        if not User.objects.filter(user_id=new_id).exists():
-            return new_id
-
 class User(AbstractUser):
     user_id = models.CharField(
         primary_key=True,
-        default=create_id,
         max_length=6,
         editable=False,
         verbose_name="user id",

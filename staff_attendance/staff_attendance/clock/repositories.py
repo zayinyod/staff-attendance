@@ -1,10 +1,14 @@
-from staff_attendance.clock.now import Now
+from util.base_repository import BaseRepository
+from util.now import Now
 from attendance.models import Clock
 from .domains import ClockDomain
 
-class ClockRepository:
-    def save(self, clock_entry: ClockDomain):
-        clock = Clock(
+class ClockRepository(BaseRepository):
+    model = Clock
+
+    @classmethod
+    def save(cls, clock_entry: ClockDomain):
+        clock = cls.model(
             user=clock_entry.user,
             date_stamp=clock_entry.date_stamp,
             time_stamp=clock_entry.time_stamp,
@@ -14,10 +18,13 @@ class ClockRepository:
         )
         clock.save()
 
-    def get_today_in_record(self, user):
+    @classmethod
+    def get_today_in_record(cls, user):
         today = Now.date()
-        return Clock.objects.filter(
-            user=user,
-            date_stamp=today,
-            clock="IN",
-        ).first()
+        return cls.filter(user=user, date_stamp=today, clock="IN").first()
+
+    @classmethod
+    def get_clock(cls, user, date):
+        in_clock = cls.filter(user=user, date_stamp=date, clock="IN").first()
+        out_clock = cls.filter(user=user, date_stamp=date, clock="OUT").first()
+        return {"in_clock": in_clock, "out_clock": out_clock}

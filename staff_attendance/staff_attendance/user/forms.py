@@ -1,27 +1,27 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from attendance.models import Department
+from .usecases import UserUseCase
 
 User = get_user_model()
 
 class UserEntryForm(UserCreationForm):
     email = forms.EmailField(
-        label="your email",
+        label="email",
         required=True,
     )
     department = forms.ModelChoiceField(
-        queryset=Department.objects.all(),
-        label="your department",
+        queryset=UserUseCase.get_all_department_names(),
+        label="department",
         required=True,
-        empty_label="select department",
+        empty_label="department",
     )
 
     class Meta:
         model = User
         fields = ["username", "department", "email", "password1", "password2"]
         labels = {
-            "username": "your name",
+            "username": "name",
         }
 
     def __init__(self, *args, **kwargs):
@@ -37,10 +37,8 @@ class UserEntryForm(UserCreationForm):
                 "placeholder": field.label,
             })
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data["email"]
-        user.department = self.cleaned_data["department"]
-        if commit:
-            user.save()
-        return user
+    def clean_user_id(self):
+        cleaned_data = super().clean()
+        user_id = UserUseCase.generate_user_id()
+        cleaned_data["user_id"] = user_id
+        return cleaned_data
