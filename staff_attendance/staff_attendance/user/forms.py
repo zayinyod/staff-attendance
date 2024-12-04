@@ -3,29 +3,27 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from .usecases import UserUseCase
 
-User = get_user_model()
-
 class UserEntryForm(UserCreationForm):
+    user_usecase = UserUseCase()
+
     email = forms.EmailField(
         label="email",
         required=True,
     )
     department = forms.ModelChoiceField(
-        queryset=UserUseCase.get_all_department_names(),
+        queryset=user_usecase.get_all_department_names(),
         label="department",
         required=True,
-        empty_label="department",
+        empty_label="Select department",
     )
 
     class Meta:
-        model = User
+        model = get_user_model()
         fields = ["username", "department", "email", "password1", "password2"]
-        labels = {
-            "username": "name",
-        }
+        labels = {"username": "name"}
 
     def __init__(self, *args, **kwargs):
-        super(UserEntryForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.fields["password1"].label = "password"
         self.fields["password2"].label = "password again"
@@ -39,6 +37,5 @@ class UserEntryForm(UserCreationForm):
 
     def clean_user_id(self):
         cleaned_data = super().clean()
-        user_id = UserUseCase.generate_user_id()
-        cleaned_data["user_id"] = user_id
+        cleaned_data["user_id"] = self.user_usecase.generate_user_id()
         return cleaned_data

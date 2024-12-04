@@ -1,0 +1,14 @@
+{% extends "frame.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/form.css' %}">{% endblock %}
+{% block body %}
+
+<div class="main">
+  <form method="GET">
+    <h1>{{ date }}</h1>
+    <p>{{ summary }}</p>
+  </form>
+</div>
+
+{% endblock %}

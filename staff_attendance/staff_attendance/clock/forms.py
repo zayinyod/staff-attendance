@@ -2,7 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from attendance.models import Clock
 from decimal import Decimal
-from .usecases import ClockUseCase
+from .usecases import ClockEntry
 
 class ClockForm(ModelForm):
     class Meta:
@@ -26,27 +26,22 @@ class ClockForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
-        super(ClockForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.initialize_fields()
 
+    def initialize_fields(self):
         if self.user:
-            break_time, location, has_in_record = ClockUseCase.get_in_breaktime_and_location(self.user)
-
+            break_time, location, has_in_record = ClockEntry.get_in_breaktime_and_location(self.user)
+            self.fields["clock"].initial = "OUT" if has_in_record else "IN"
             if has_in_record:
-                self.fields["clock"].initial = "OUT"
-                if break_time is not None:
-                    self.fields["break_time"].initial = break_time
-                if location is not None:
-                    self.fields["location"].initial = location
-            else:
-                self.fields["clock"].initial = "IN"
+                self.fields["break_time"].initial = break_time
+                self.fields["location"].initial = location
 
         for field in self.fields.values():
-            field.widget.attrs.update({
-                "class": "input",
-            })
+            field.widget.attrs.setdefault("class", "input")
 
     def clean_break_time(self):
         break_time = self.cleaned_data.get("break_time")
         if break_time % Decimal("0.25") != 0:
-            raise forms.ValidationError("Enter in units of 0.25.")
+            raise forms.ValidationError("Break time must be in increments of 0.25.")
         return break_time

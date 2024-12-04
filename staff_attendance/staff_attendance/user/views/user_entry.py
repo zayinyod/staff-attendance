@@ -1,8 +1,8 @@
 from django.db import IntegrityError
 from django.shortcuts import redirect
 from django.views.generic.edit import CreateView
-from .forms import UserEntryForm
-from .usecases import UserUseCase
+from ..forms import UserEntryForm
+from ..usecases import UserUseCase
 
 class UserEntry(CreateView):
     form_class = UserEntryForm
