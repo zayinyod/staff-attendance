@@ -6,16 +6,29 @@
 
 <div class="main">
   <form method="POST">
-    <h2>Sign in</h2>
+    <h1>Sign in</h1>
     <p class="description">Please fill out the form below.</p>
     {% csrf_token %}
-    {{ form.non_field_errors }}
+
+    {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+        <div class="error"><p>{{ error }}</p></div>
+      {% endfor %}
+    {% endif %}
+
     {% for field in form %}
-    <div class="field">
-      {{ field }}
-      {{ field.errors }}
-    </div>
+      <div class="field">
+        {{ field }}
+        {% if field.errors %}
+          <div class="error">
+            {% for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
     {% endfor %}
+
     <p><button class="btn" type="submit">Entry</button></p>
     <a class="link" href="{% url 'login' %}">back</a>
   </form>

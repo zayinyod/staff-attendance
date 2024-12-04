@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "frame.html" %}
 {% load static %}
 {% block title %}Clock{% endblock %}
 {% block header %}<link rel="stylesheet" href="{% static 'css/form.css' %}">{% endblock %}
@@ -6,22 +6,29 @@
 
 <div class="main">
   <form method="POST">
-    <h2>Clock In or Out</h2>
+    <h1>Clock</h1>
     <p class="description">Please fill out the form below.</p>
     {% csrf_token %}
-    {{ form.non_field_errors }}
+
+    {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+        <div class="error"><p>{{ error }}</p></div>
+      {% endfor %}
+    {% endif %}
+
     {% for field in form %}
-    <div class="field">
-      {{ field }}
-      {% if field.errors %}
-        <div class="error">
-          {% for error in field.errors %}
-            <p>{{ error }}</p>
-          {% endfor %}
-        </div>
-      {% endif %}
-    </div>
+      <div class="field">
+        {{ field }}
+        {% if field.errors %}
+          <div class="error">
+            {% for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
     {% endfor %}
+    
     <p><button class="btn" type="submit">Clock</button></p>
     <a class="link" href="{% url 'logout' %}">log out</a>
   </form>

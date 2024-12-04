@@ -109,7 +109,6 @@ class Migration(migrations.Migration):
                 (
                     "user_id",
                     models.CharField(
-                        default=attendance.models.create_id,
                         editable=False,
                         max_length=6,
                         primary_key=True,

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Login{% endblock %}
-{% block header %}<link rel="stylesheet" href="{% static 'css/login.css' %}">{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/base.css' %}">{% endblock %}
 {% block body %}
 
 <div class="main">
@@ -11,7 +11,6 @@
     <div class="certificate">
       <input class="input" type="text" name="username" placeholder="user id" required>
       <input class="input" type="password" name="password" placeholder="password" required>
-      <input type="hidden" name="next" value="{{ next }}">
       {% if error %}
         <p class="error">{{ error }}</p>
       {% endif %}
