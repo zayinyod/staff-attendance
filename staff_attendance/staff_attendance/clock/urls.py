@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import ClockView, Logout
+from .views import ClockView, DashboardView
 
 urlpatterns = [
     path("", ClockView.as_view(), name="clock"),
-    path("logout/", Logout.as_view(), name="logout"),
+    path("dashboard/", DashboardView.as_view(), name="dashboard"),
 ]

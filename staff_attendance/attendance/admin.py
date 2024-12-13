@@ -7,3 +7,4 @@ class DepartmentAdmin(admin.ModelAdmin):
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(User)
 admin.site.register(Clock)
+# admin.site.register()
