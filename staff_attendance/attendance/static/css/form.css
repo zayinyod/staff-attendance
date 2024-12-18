@@ -63,6 +63,11 @@ label {
   font-size: 0.8rem;
 }
 
+input, select {
+  width: 50%;
+  box-sizing: border-box;
+}
+
 .input {
   background: transparent;
   border: 0.25px solid #339999;
@@ -106,7 +111,7 @@ label {
   border: none;
   border-radius: 5px;
   margin-top: 1rem;
-  padding: 10px 85px;
+  padding: 10px 75px;
   display: inline-block;
   text-decoration: none;
   transition: var(--transition);

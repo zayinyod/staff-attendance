@@ -34,6 +34,7 @@ class ClockCalculate:
             "out_datetime": out_datetime,
             "break_time": break_time,
         }
+
         return result
 
     @classmethod
@@ -94,6 +95,7 @@ class ClockCalculate:
             "break_time": break_time,
             "overtime_duration": work_duration - cls.WORK_HOURS_PER_DAY if is_overtime else 0.0,
         }
+
         return summary
 
     @classmethod
@@ -119,4 +121,5 @@ class ClockCalculate:
             "total_break_time": total_break_time,
             "total_overtime": total_overtime,
         }
+
         return summary

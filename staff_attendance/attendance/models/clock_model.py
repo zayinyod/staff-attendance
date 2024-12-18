@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from decimal import Decimal
 from util.now import Now
+from .code_master import CodeMaster
 
 class Clock(models.Model):
     user = models.ForeignKey(
@@ -18,13 +19,12 @@ class Clock(models.Model):
         default=Now.time,
         verbose_name="time",
     )
-    clock = models.CharField(
-        max_length=20,
-        default="In",
-        choices=[
-            ("IN", "In"),
-            ("OUT", "Out"),
-        ],
+    clock = models.ForeignKey(
+        CodeMaster,
+        on_delete=models.PROTECT,
+        limit_choices_to={"code_type": "clock"},
+        default="0",
+        related_name="clock_codes",
         verbose_name="in/out",
     )
     break_time = models.DecimalField(
@@ -33,18 +33,16 @@ class Clock(models.Model):
         default=Decimal("1.00"),
         verbose_name="breaktime",
     )
-    location = models.CharField(
-        max_length=20,
-        default="Office",
-        choices=[
-            ("office", "Office"),
-            ("telework", "Telework"),
-        ],
-        verbose_name="location",
+    location = models.ForeignKey(
+        CodeMaster,
+        on_delete=models.PROTECT,
+        limit_choices_to={"code_type": "location"},
+        default="0",
+        related_name="location_codes",
     )
 
     class Meta:
         unique_together = ("user", "date_stamp", "clock")
 
     def __str__(self):
-        return f"[{self.clock}] {self.date_stamp}: {self.user.username}"
+        return f"[{self.clock.description}] {self.date_stamp}: {self.user.username}"
