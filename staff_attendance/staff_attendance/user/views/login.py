@@ -4,7 +4,7 @@ from django.views import View
 
 class Login(View):
     template_name = "user/login.html"
-    redirect_url = "/clock"
+    redirect_url = "dashboard"
 
     def get(self, request):
         return render(request, self.template_name)
