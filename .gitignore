@@ -1,2 +1,4 @@
 **/__pycache__/**
 /staff_attendance/static/
+/staff_attendance/db.sqlite3
+.env

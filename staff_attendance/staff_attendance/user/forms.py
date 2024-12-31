@@ -38,4 +38,5 @@ class UserEntryForm(UserCreationForm):
     def clean_user_id(self):
         cleaned_data = super().clean()
         cleaned_data["user_id"] = self.user_usecase.generate_user_id()
+
         return cleaned_data
