@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from util.now import Now
 from .code_master import CodeMaster
 
 class WorkflowBase(models.Model):
@@ -19,6 +20,7 @@ class WorkflowBase(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name="%(class)s_workflows_approved",
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -28,9 +30,12 @@ class WorkflowBase(models.Model):
         abstract = True
 
 class PaidLeave(WorkflowBase):
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(default=Now.date)
+    end_date = models.DateField(default=Now.date)
     reason = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"[{self.user.username}] {self.start_date} - {self.end_date}"
 
 class ClockCorrect(WorkflowBase):
     original_time = models.TimeField()

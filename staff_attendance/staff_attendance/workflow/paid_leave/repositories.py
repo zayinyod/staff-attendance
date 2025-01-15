@@ -10,6 +10,8 @@ class PaidLeaveRepository(BaseRepository):
 
     @classmethod
     def create(cls, paid_leave_entry: PaidLeaveDomain):
+        print(f"Saving PaidLeave: {paid_leave_entry}")
+
         paid_leave = cls.model(
             user=paid_leave_entry.user,
             status=paid_leave_entry.status,
@@ -22,6 +24,8 @@ class PaidLeaveRepository(BaseRepository):
 
     @classmethod
     def update(cls, id, status, approver):
+        print(f"Saving: {id, status, approver}")
+
         this_paid_leave = cls.get(id=id)
         new_status = cls.code_master.get(status)
         this_paid_leave.status = new_status

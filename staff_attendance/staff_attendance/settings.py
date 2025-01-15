@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "attendance",
 ]
 
-AUTH_USER_MODEL = 'attendance.User'
+AUTH_USER_MODEL = "attendance.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -82,6 +82,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "staff_attendance.wsgi.application"
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # Database

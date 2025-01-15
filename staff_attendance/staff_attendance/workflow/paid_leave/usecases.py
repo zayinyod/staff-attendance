@@ -3,11 +3,13 @@ from .repositories import PaidLeaveRepository
 
 class PaidLeaveEntry:
     paid_leave_repository = PaidLeaveRepository()
+    pending_status = paid_leave_repository.code_master.get("pending")
 
     @classmethod
-    def create_paid_leave_request(cls, user, cleaned_data):
+    def create_request(cls, user, cleaned_data):
         paid_leave_request = PaidLeaveDomain(
             user=user,
+            status=cls.pending_status,
             start_date=cleaned_data["start_date"],
             end_date=cleaned_data["end_date"],
             reason=cleaned_data["reason"],
