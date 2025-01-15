@@ -20,4 +20,4 @@ class Login(View):
             login(request, user)
             return redirect(self.redirect_url)
         else:
-            return render(request, self.template_name, {"error": "Invalid user id or password."})
+            return render(request, self.template_name, {"error": "Your login details are incorrect."})

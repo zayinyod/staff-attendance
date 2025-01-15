@@ -22,8 +22,10 @@ class BaseView(CustomLoginRequiredMixin, View):
             try:
                 self.form_valid(form)
                 return redirect(self.success_url)
-            except IntegrityError:
-                form.add_error(None, "Already registered.")
+            except IntegrityError as e:
+                print(f"IntegrityError: {e}")
+                form.add_error(None, "This record already exists.")
+
         return render(request, self.template_name, self.get_context_data(form=form))
 
     def form_valid(self, form):

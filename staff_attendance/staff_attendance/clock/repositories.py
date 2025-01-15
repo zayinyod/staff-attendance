@@ -13,6 +13,7 @@ class ClockRepository(BaseRepository):
 
     @classmethod
     def save(cls, clock_entry: ClockDomain):
+        print(f"Saving Clock: {clock_entry}")
         clock = cls.model(
             user=clock_entry.user,
             date_stamp=clock_entry.date_stamp,

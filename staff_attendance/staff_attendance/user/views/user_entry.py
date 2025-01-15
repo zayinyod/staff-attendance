@@ -13,6 +13,7 @@ class UserEntry(CreateView):
         try:
             UserUseCase.create_user_entry(form.cleaned_data)
             return redirect(self.redirect_url)
-        except IntegrityError:
+        except IntegrityError as e:
+            print(f"IntegrityError: {e}")
             form.add_error(None, "Username already exists.")
             return self.form_invalid(form)
