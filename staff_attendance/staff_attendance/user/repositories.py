@@ -7,6 +7,7 @@ class UserRepository(BaseRepository):
 
     @classmethod
     def save(cls, user_entry: UserDomain):
+        print(f"Saving User: {user_entry}")
         user = cls.model(
             user_id=user_entry.user_id,
             username=user_entry.username,

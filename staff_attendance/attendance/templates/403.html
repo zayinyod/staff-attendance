@@ -1,0 +1,13 @@
+{% extends "frame.html" %}
+{% load static %}
+{% block title %}403{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/base.css' %}">{% endblock %}
+{% block body %}
+
+<div class="main">
+  <form class="message">
+    <h2>Sorry, you are not authorized to access this page.</h2>
+  </form>
+</div>
+
+{% endblock %}

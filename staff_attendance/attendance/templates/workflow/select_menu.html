@@ -1,0 +1,16 @@
+{% extends "frame.html" %}
+{% load static %}
+{% block title %}Workflow Select{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/base.css' %}">{% endblock %}
+{% block body %}
+
+<div class="main">
+  <form>
+    <h1>Workflow Select</h1>
+    <p class="description">Select a workflow category.</p>
+    <p><a class = "workflow" href="{% url 'request' %}">Request</a></p>
+    <p><a class = "workflow" href="{% url 'approval' %}">Approval</a></p>
+  </form>
+</div>
+
+{% endblock %}

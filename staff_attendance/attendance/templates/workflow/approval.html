@@ -1,0 +1,46 @@
+{% extends "frame.html" %}
+{% load static %}
+{% block title %}Workflow Select{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/base.css' %}">{% endblock %}
+{% block body %}
+
+<div class="main">
+  <form method="post">
+    {% csrf_token %}
+    <h1>Approval</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>User</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Reason</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in pending_list %}
+        <tr>
+          <td>{{ data.id }}</td>
+          <td>{{ data.user.username }}</td>
+          <td>{{ data.start_date | date:"Y/m/d" }}</td>
+          <td>{{ data.end_date | date:"Y/m/d" }}</td>
+          <td>{{ data.reason }}</td>
+          <td>
+            <select class="input" name="status_{{ data.id }}">
+              <option value="0" {% if data.status == 'pending' %}selected{% endif %}>Pending</option>
+              <option value="1">Approved</option>
+              <option value="2">Rejected</option>
+            </select>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><button class="btn" type="submit">Submit</button></p>
+  </form>
+</div>
+
+{% endblock %}
+{% block script %}<script src="{% static 'js/confirm.js' %}"></script>{% endblock %}

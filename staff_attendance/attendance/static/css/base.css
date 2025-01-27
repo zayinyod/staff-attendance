@@ -54,6 +54,11 @@ h1, p {
   margin-bottom: 1rem;
 }
 
+.description {
+  font-size: 0.7rem;
+  color: var(--base_color);
+}
+
 label {
   font-size: 0.8rem;
 }
@@ -87,6 +92,32 @@ label {
   isolation: isolate;
 }
 
+.message {
+  font-size: 1.5rem;
+  color: #ff4422;
+  background: #1E1E28;
+  isolation: isolate;
+}
+
+.workflow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #FF4D45;
+  background: #1E1E28;
+  border: 2px solid #FF4D45;
+  border-radius: 5px;
+  margin: var(--base_margin);
+  margin-top: 0.6rem;
+  padding: 8px 20px;
+  width: fit-content;
+  isolation: isolate;
+  text-decoration: none;
+}
+
+.workflow:hover {
+  opacity: 0.5;
+}
+
 .btn {
   font-family: var(--font);
   font-size: 1.15rem;
@@ -99,6 +130,7 @@ label {
   padding: 10px 85px;
   display: inline-block;
   text-decoration: none;
+  cursor: pointer;
   transition: var(--transition);
 }
 
@@ -119,4 +151,18 @@ label {
   color: #ff4422;
   text-decoration: underline;
   text-decoration-color: currentColor;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #333;
+  overflow: hidden;
+}
+
+th, td {
+  font-size: 0.8rem;
+  border: 1px solid #666;
+  text-align: center;
+  padding: 4px;
 }

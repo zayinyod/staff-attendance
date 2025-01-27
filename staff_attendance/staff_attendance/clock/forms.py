@@ -18,12 +18,13 @@ class ClockForm(ModelForm):
             "date_stamp": "date",
             "time_stamp": "time",
             "clock": "in/out",
-            "break_time": "breaktime",
+            "break_time": "break time",
             "location": "location",
         }
         widgets = {
+            "date_stamp": forms.NumberInput(attrs={"type": "date"}),
+            "time_stamp": forms.NumberInput(attrs={"type": "time"}),
             "break_time": forms.NumberInput(attrs={
-                "placeholder": "break time",
                 "step": STEP_NUMBER,
                 "min": "0.00",
                 "max": "24.00",
@@ -36,6 +37,7 @@ class ClockForm(ModelForm):
 
         self.fields["clock"].label_from_instance = lambda obj: obj.description
         self.fields["location"].label_from_instance = lambda obj: obj.description
+
         self.initialize_fields()
 
     def initialize_fields(self):
@@ -47,11 +49,14 @@ class ClockForm(ModelForm):
                 self.fields["location"].initial = location
 
         for field in self.fields.values():
-            field.widget.attrs.setdefault("class", "input")
+            field.widget.attrs.update({
+                "class": "input",
+                "placeholder": field.label,
+            })
 
     def clean_break_time(self):
         break_time = self.cleaned_data.get("break_time")
 
         if break_time % Decimal(self.Meta.STEP_NUMBER) != 0:
-            raise forms.ValidationError("Break time must be in increments of 0.25.")
+            raise forms.ValidationError("`Break time` must be in increments of 0.25.")
         return break_time

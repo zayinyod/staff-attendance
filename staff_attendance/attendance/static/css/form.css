@@ -63,7 +63,7 @@ label {
   font-size: 0.8rem;
 }
 
-input, select {
+input, select, textarea {
   width: 50%;
   box-sizing: border-box;
 }
@@ -114,6 +114,7 @@ input, select {
   padding: 10px 75px;
   display: inline-block;
   text-decoration: none;
+  cursor: pointer;
   transition: var(--transition);
 }
 
@@ -134,4 +135,12 @@ input, select {
   color: #ff4422;
   text-decoration: underline;
   text-decoration-color: currentColor;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
 }
