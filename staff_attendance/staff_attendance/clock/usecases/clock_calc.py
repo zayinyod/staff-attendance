@@ -94,8 +94,8 @@ class ClockCalculate:
         overtime_duration = work_duration - cls.WORK_HOURS_PER_DAY if is_overtime else 0.0
 
         return {
-            "punch_in": Now.time(in_datetime),
-            "punch_out": Now.time(out_datetime),
+            "punch_in": Now.time_str(in_datetime),
+            "punch_out": Now.time_str(out_datetime),
             "work_duration": work_duration,
             "night_work": night_work,
             "break_time": break_time.total_seconds() / 3600,

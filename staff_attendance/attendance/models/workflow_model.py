@@ -30,8 +30,8 @@ class WorkflowBase(models.Model):
         abstract = True
 
 class PaidLeave(WorkflowBase):
-    start_date = models.DateField(default=Now.date)
-    end_date = models.DateField(default=Now.date)
+    start_date = models.DateField(default=Now.date_str)
+    end_date = models.DateField(default=Now.date_str)
     reason = models.TextField(null=True, blank=True)
 
     def __str__(self):

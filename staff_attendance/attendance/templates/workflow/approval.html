@@ -1,22 +1,24 @@
 {% extends "frame.html" %}
 {% load static %}
-{% block title %}Workflow Select{% endblock %}
-{% block header %}<link rel="stylesheet" href="{% static 'css/base.css' %}">{% endblock %}
+{% block title %}Approval{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/workflow.css' %}">{% endblock %}
 {% block body %}
 
 <div class="main">
   <form method="post">
-    {% csrf_token %}
     <h1>Approval</h1>
+    <p class="description">Please choose either "Approved" or "Rejected", and then click the button.</p>
+    {% csrf_token %}
+
     <table>
       <thead>
         <tr>
-          <th>ID</th>
-          <th>User</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Reason</th>
-          <th>Status</th>
+          <th style="width: 5%;">ID</th>
+          <th style="width: 10%;">User</th>
+          <th style="width: 15%;">Start Date</th>
+          <th style="width: 15%;">End Date</th>
+          <th style="width: 25%;">Reason</th>
+          <th style="width: 10%;">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -38,6 +40,7 @@
         {% endfor %}
       </tbody>
     </table>
+
     <p><button class="btn" type="submit">Submit</button></p>
   </form>
 </div>
