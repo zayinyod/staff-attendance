@@ -1,33 +1,19 @@
-from util.mixins import CustomLoginRequiredMixin
+from util.base_superuser_view import BaseSuperUserView
+from util.base_user_view import BaseUserView
 from django.shortcuts import render, redirect
-from django.views import View
 from .paid_leave.usecases import PaidLeaveEntry
 
-class SuperUserSelectView(CustomLoginRequiredMixin, View):
+class WorkflowSelectView(BaseSuperUserView):
     template = "workflow/select_menu.html"
-    forbidden_template = "403.html"
 
-    def get(self, request):
-        if not request.user.is_superuser:
-            return render(request, self.forbidden_template, status=403)
-        return render(request, self.template)
-
-class RequestView(CustomLoginRequiredMixin, View):
+class RequestView(BaseUserView):
     template = "workflow/request_menu.html"
 
-    def get(self, request):
-        return render(request, self.template)
-
-class ApprovalView(CustomLoginRequiredMixin, View):
+class ApprovalView(BaseSuperUserView):
     template = "workflow/approval.html"
-    forbidden_template = "403.html"
 
-    def get(self, request):
-        if not request.user.is_superuser:
-            return render(request, self.forbidden_template, status=403)
-        pending_list = PaidLeaveEntry.pending()
-
-        return render(request, self.template, {"pending_list": pending_list})
+    def get_context_data(self, request):
+        return {"pending_list": PaidLeaveEntry.pending()}
 
     def post(self, request):
         if not request.user.is_superuser:

@@ -26,7 +26,7 @@ class ClockRepository(BaseRepository):
 
     @classmethod
     def get_today_in_record(cls, user):
-        today = Now.date()
+        today = Now.date_str()
         return cls.filter(user=user, date_stamp=today, clock=cls.to_in).first()
 
     @classmethod

@@ -2,7 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from attendance.models import Clock
 from decimal import Decimal
-from .usecases import ClockEntry
+from ..usecases import ClockEntry
 
 class ClockForm(ModelForm):
     clock_status = ClockEntry.clock_repository

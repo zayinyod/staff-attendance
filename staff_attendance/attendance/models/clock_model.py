@@ -12,11 +12,11 @@ class Clock(models.Model):
         verbose_name="username",
     )
     date_stamp = models.DateField(
-        default=Now.date,
+        default=Now.date_str,
         verbose_name="date",
     )
     time_stamp = models.TimeField(
-        default=Now.time,
+        default=Now.time_str,
         verbose_name="time",
     )
     clock = models.ForeignKey(
