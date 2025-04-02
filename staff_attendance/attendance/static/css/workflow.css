@@ -35,7 +35,7 @@ form {
   border-radius: 10px;
   margin: var(--base_margin);
   padding: 50px 35px;
-  width: 400px;
+  width: 650px;
   height: 550px;
   box-shadow: 0 0 40px rgba(8,7,16,0.6);
 }
@@ -63,16 +63,12 @@ label {
   font-size: 0.8rem;
 }
 
-input, select, textarea {
-  width: 50%;
-  box-sizing: border-box;
-}
-
 .input {
+  font-size: 0.7rem;
+  color: antiquewhite;
   background: transparent;
   border: 0.25px solid #339999;
   border-radius: 5px;
-  margin: 10px 10px 0 10px;
   padding: 10px 10px 10px 14px;
   outline: none;
   cursor: pointer;
@@ -80,9 +76,8 @@ input, select, textarea {
 }
 
 .input:hover {
-  color: #f7f4e9;
-  background: #100f2c;
-  padding: 10px 10px 10px 50px;
+  color: #080b16;
+  background: #eff0d3;
 }
 
 .error {
@@ -93,14 +88,35 @@ input, select, textarea {
   border-radius: 5px;
   margin: var(--base_margin);
   margin-top: 0.6rem;
+  padding: 8px 20px;
   width: fit-content;
   isolation: isolate;
 }
 
-.error p {
+.message {
+  font-size: 1.5rem;
+  color: #ff4422;
+  background: #1E1E28;
+  isolation: isolate;
+}
+
+.workflow {
   font-size: 0.7rem;
+  font-weight: 700;
+  color: #FF4D45;
+  background: #1E1E28;
+  border: 2px solid #FF4D45;
+  border-radius: 5px;
   margin: var(--base_margin);
+  margin-top: 0.6rem;
   padding: 8px 20px;
+  width: fit-content;
+  isolation: isolate;
+  text-decoration: none;
+}
+
+.workflow:hover {
+  opacity: 0.5;
 }
 
 .btn {
@@ -112,7 +128,7 @@ input, select, textarea {
   border: none;
   border-radius: 5px;
   margin-top: 1rem;
-  padding: 10px 75px;
+  padding: 10px 85px;
   display: inline-block;
   text-decoration: none;
   cursor: pointer;
@@ -138,10 +154,35 @@ input, select, textarea {
   text-decoration-color: currentColor;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: 1px solid #72777D;
+  margin: 10px;
+  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(8,7,16,0.6);
 }
 
-input[type="time"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
+th, td {
+  font-size: 0.7rem;
+  color: antiquewhite;
+  border: 1px solid #72777D;
+  text-align: center;
+  text-overflow: ellipsis;
+  padding: 4px;
+}
+
+th {
+  background-color: #27292D;
+}
+
+td {
+  background-color: #202122;
+}
+
+tr:hover td {
+  opacity: 0.8;
 }

@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.views import View
 
-class BaseView(CustomLoginRequiredMixin, View):
+class BaseFormView(CustomLoginRequiredMixin, View):
     template_name = None
     form_class = None
     success_url = None

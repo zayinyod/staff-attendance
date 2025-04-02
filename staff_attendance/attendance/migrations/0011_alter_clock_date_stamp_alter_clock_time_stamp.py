@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="clock",
             name="date_stamp",
-            field=models.DateField(default=util.now.Now.date, verbose_name="date"),
+            field=models.DateField(default=util.now.Now.date_str, verbose_name="date"),
         ),
         migrations.AlterField(
             model_name="clock",
             name="time_stamp",
-            field=models.TimeField(default=util.now.Now.time, verbose_name="time"),
+            field=models.TimeField(default=util.now.Now.time_str, verbose_name="time"),
         ),
     ]
