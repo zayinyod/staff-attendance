@@ -1,15 +1,22 @@
-
 {
 	"name": "staff_attendance",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-	
+
+	"postStartCommand": "cd staff_attendance && python manage.py runserver",
+
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"ms-python.black-formatter",
-				"ms-python.flake8"
+				"ms-python.flake8",
+				"streetsidesoftware.code-spell-checker",
+        		"mhutchie.git-graph",
+        		"donjayamanne.githistory",
+        		"eamodio.gitlens",
+				"oderwat.indent-rainbow",
+				"wayou.vscode-todo-highlight"
 			]
 		}
 	}
