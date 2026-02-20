@@ -1,8 +1,9 @@
-## Priority.
+# Tasks
+
+## High Priority Tasks
 - 各月の一覧画面
 
-
-## Task.
+## Low Priority Tasks
 - パスワード バリデーション
 - パスワード再設定
 - アクセス履歴
