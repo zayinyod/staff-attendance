@@ -1,1 +1,17 @@
+alias ca="cat"
+alias fd='find . -type d -name'
+alias ff='find . -type f -name'
+alias ga="git add"
+alias gb="git branch"
+alias gc="git commit -m"
+alias gl="git log --oneline"
+alias glh="gl | head -n 5"
+alias gpl="git pull origin"
+alias gps="git push origin"
+alias grb="git rebase -i"
+alias grs="git reset HEAD"
+alias gs="git status"
+alias hg="history | grep"
 alias ll='ls -alF --color=auto'
+alias tl="tail"
+alias run="cd /workspaces/staff-attendance/staff_attendance && python manage.py runserver"
