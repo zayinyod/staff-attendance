@@ -6,6 +6,7 @@
 - ワークフロー申請
 
 ## 機能設計
+
 1. ユーザー
    - 新規作成
       - ユーザーID（6桁）
@@ -71,14 +72,26 @@
       - 削除
 
 ## 画面設計
-- Log in
-   - Dashboard
-   - Clock
-   - Timesheets
-   - Administration
-   - Log out
+
+```mermaid
+graph LR
+    A[Log in] --> B[Dashboard]
+
+    subgraph Staff Attendance
+        B
+        C[Clock]
+        D[Timesheets]
+        E[Administration]
+    end
+    
+    B --> C
+    B --> D
+    B --> E
+    B --> F[Log out] --> A
+```
 
 ## DB設計
+
 1. user table
    - ユーザーID（6桁）
    - ユーザー名
