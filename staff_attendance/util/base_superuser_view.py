@@ -1,12 +1,17 @@
 from util.mixins import CustomLoginRequiredMixin
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views import View
 
+
 class BaseSuperUserView(CustomLoginRequiredMixin, View):
+    """
+    スーパーユーザ向けのViewの基底クラス
+    """
+
     template = None
     forbidden_template = "403.html"
 
-    def get_context_data(self, request):
+    def get_context_data(self, request) -> dict:
         return {}
 
     def get(self, request):
