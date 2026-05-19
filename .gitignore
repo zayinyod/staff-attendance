@@ -2,3 +2,4 @@
 /staff_attendance/static/
 /staff_attendance/db.sqlite3
 .env
+.devcontainer/devcontainer-lock.json
