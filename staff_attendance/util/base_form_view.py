@@ -1,5 +1,5 @@
 from util.mixins import CustomLoginRequiredMixin
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.shortcuts import render, redirect
 from django.views import View
 
@@ -29,10 +29,10 @@ class BaseFormView(CustomLoginRequiredMixin, View):
 
         if form.is_valid():
             try:
-                self.form_valid(form)
+                with transaction.atomic():
+                    self.form_valid(form)
                 return redirect(self.success_url)
             except IntegrityError as e:
-                print(f"IntegrityError: {e}")
                 form.add_error(None, "This record already exists.")
 
         return render(
