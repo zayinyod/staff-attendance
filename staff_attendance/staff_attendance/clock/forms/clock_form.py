@@ -5,10 +5,6 @@ from decimal import Decimal
 from ..usecases import ClockEntry
 
 class ClockForm(ModelForm):
-    clock_status = ClockEntry.clock_repository
-    to_in = clock_status.to_in
-    to_out = clock_status.to_out
-
     class Meta:
         STEP_NUMBER = "0.25"
         model = Clock
@@ -42,8 +38,11 @@ class ClockForm(ModelForm):
 
     def initialize_fields(self):
         if self.user:
+            codes = ClockEntry.clock_repository._clock_codes()
+            to_in = codes.get("to_in")
+            to_out = codes.get("to_out")
             break_time, location, has_in_record = ClockEntry.get_in_breaktime_and_location(self.user)
-            self.fields["clock"].initial = self.to_out if has_in_record else self.to_in
+            self.fields["clock"].initial = to_out if has_in_record else to_in
             if has_in_record:
                 self.fields["break_time"].initial = break_time
                 self.fields["location"].initial = location

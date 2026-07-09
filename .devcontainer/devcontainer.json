@@ -3,19 +3,27 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
-
+	"features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "20",
+            "nodeGypDependencies": true
+        }
+    },
+	"forwardPorts": [8000, 3000],
 	"postStartCommand": "cd staff_attendance && python manage.py runserver",
-
+	"postAttachCommand": "cd frontend && npm run dev",
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-python.black-formatter",
-				"ms-python.flake8",
-				"streetsidesoftware.code-spell-checker",
-        		"mhutchie.git-graph",
+				"dbaeumer.vscode-eslint",
         		"donjayamanne.githistory",
         		"eamodio.gitlens",
+				"esbenp.prettier-vscode",
+				"mhutchie.git-graph",
+				"ms-python.black-formatter",
+				"ms-python.flake8",
 				"oderwat.indent-rainbow",
+				"streetsidesoftware.code-spell-checker",
 				"wayou.vscode-todo-highlight"
 			]
 		}
