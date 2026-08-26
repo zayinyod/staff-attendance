@@ -2,9 +2,12 @@
 !.claude/settings.json
 
 **/__pycache__/**
+*.log
 .env
 .devcontainer/devcontainer-lock.json
-*.log
 
 /staff_attendance/static/
 /staff_attendance/db.sqlite3
+
+# 環境固有の symlink
+memories
