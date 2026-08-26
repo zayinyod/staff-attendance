@@ -1,7 +1,10 @@
+.claude/*
+!.claude/settings.json
+
 **/__pycache__/**
-/staff_attendance/static/
-/staff_attendance/db.sqlite3
 .env
 .devcontainer/devcontainer-lock.json
-.claude/
 *.log
+
+/staff_attendance/static/
+/staff_attendance/db.sqlite3
