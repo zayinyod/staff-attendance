@@ -14,7 +14,9 @@ class UserRepository(BaseRepository):
             department=user_entry.department,
         )
         user.set_password(user_entry.password)
-        user.save()
+        # user_idは自動採番でない主キーであり、save()は既存行のUPDATEを試みる。
+        # 重複時に既存ユーザーを上書きしないよう、INSERTを強制する。
+        user.save(force_insert=True)
 
     @classmethod
     def user_id_exists(cls, user_id):
