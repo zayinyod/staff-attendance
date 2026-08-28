@@ -5,9 +5,16 @@ view モジュールの import は Django が URL 解決時にレイジーに行
 setUpTestData でコードマスターを作成してから self.client でリクエストすることで、
 ClockRepository 等のクラス定義時 DB クエリが正しいデータを参照できる。
 """
+from datetime import date
+from unittest.mock import patch
+from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
-from attendance.models import User, Department, CodeMaster
+from django.utils import timezone
+from attendance.models import Clock, CodeMaster, Department, PaidLeave, User
+from staff_attendance.user.repositories import UserRepository
+from staff_attendance.user.usecases import UserUseCase
+from util.id_generator import IDGenerator
 
 
 class BaseViewTestCase(TestCase):
@@ -240,3 +247,204 @@ class TestApprovalView(BaseViewTestCase):
         """未認証ユーザーはリダイレクトされること"""
         response = self.client.get(reverse("approval"))
         self.assertEqual(response.status_code, 302)
+
+
+# ------------------------------------------------------------------ Dashboard 日付検証
+
+class TestDashboardDateResolution(BaseViewTestCase):
+    """DashboardView の date クエリパラメータ検証"""
+
+    def setUp(self):
+        self.client.login(username="testuser", password="SecurePass1!")
+
+    def test_get_with_malformed_date_falls_back_to_today(self):
+        """書式が不正な日付は当日にフォールバックし、通知が表示されること"""
+        response = self.client.get(reverse("dashboard"), {"date": "not-a-date"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Invalid date")
+        self.assertEqual(response.context["date"], timezone.localdate())
+
+    def test_get_with_out_of_range_date_falls_back_to_today(self):
+        """書式は正しいが存在しない日付も当日にフォールバックすること"""
+        response = self.client.get(reverse("dashboard"), {"date": "2024-13-45"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Invalid date")
+        self.assertEqual(response.context["date"], timezone.localdate())
+
+    def test_get_with_valid_date_is_converted_to_date_object(self):
+        """有効な日付は date 型に変換され、通知が表示されないこと"""
+        response = self.client.get(reverse("dashboard"), {"date": "2024-04-01"})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Invalid date")
+        self.assertEqual(response.context["date"], date(2024, 4, 1))
+
+    def test_get_without_date_uses_today(self):
+        """未指定の場合は当日が使用されること"""
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.context["date"], timezone.localdate())
+        self.assertFalse(response.context["has_invalid_date"])
+
+
+# ------------------------------------------------------------------ 打刻バリデーション
+
+class TestClockOutValidation(BaseViewTestCase):
+    """IN 打刻のない日の OUT 打刻を拒否すること"""
+
+    def setUp(self):
+        self.client.login(username="testuser", password="SecurePass1!")
+
+    def clock_payload(self, clock, date_stamp, time_stamp):
+        return {
+            "date_stamp": date_stamp,
+            "time_stamp": time_stamp,
+            "clock": clock.pk,
+            "break_time": "1.00",
+            "location": self.location_office.pk,
+        }
+
+    def test_post_clock_out_without_clock_in_shows_error(self):
+        """IN 打刻がない日に OUT 打刻を行うとエラーになること"""
+        response = self.client.post(
+            reverse("clock"),
+            self.clock_payload(self.clock_out, "2024-05-01", "18:00"),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "without a clock-in record")
+        self.assertFalse(Clock.objects.filter(date_stamp="2024-05-01").exists())
+
+    def test_post_clock_out_after_clock_in_succeeds(self):
+        """同一日に IN 打刻があれば OUT 打刻できること"""
+        self.client.post(
+            reverse("clock"),
+            self.clock_payload(self.clock_in, "2024-05-02", "09:00"),
+        )
+        response = self.client.post(
+            reverse("clock"),
+            self.clock_payload(self.clock_out, "2024-05-02", "18:00"),
+        )
+        self.assertRedirects(response, reverse("clock"))
+        self.assertTrue(
+            Clock.objects.filter(date_stamp="2024-05-02", clock=self.clock_out).exists()
+        )
+
+
+# ------------------------------------------------------------------ 承認処理
+
+class TestApprovalPost(BaseViewTestCase):
+    """ApprovalView の POST 処理"""
+
+    def setUp(self):
+        self.pending = CodeMaster.objects.get(code_type="workflow_status", code="0")
+        self.approved = CodeMaster.objects.get(code_type="workflow_status", code="1")
+        self.rejected = CodeMaster.objects.get(code_type="workflow_status", code="2")
+        self.paid_leave = PaidLeave.objects.create(
+            user=self.user,
+            status=self.pending,
+            start_date=date(2024, 6, 1),
+            end_date=date(2024, 6, 2),
+            reason="test",
+        )
+
+    def test_post_returns_403_for_general_user(self):
+        """一般ユーザーの POST は 403 になること"""
+        self.client.login(username="testuser", password="SecurePass1!")
+        response = self.client.post(reverse("approval"), {})
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_redirects_if_not_logged_in(self):
+        """未認証ユーザーの POST はリダイレクトされること"""
+        response = self.client.post(reverse("approval"), {})
+        self.assertEqual(response.status_code, 302)
+
+    def test_post_approves_request(self):
+        """承認するとステータスと承認者が更新されること"""
+        self.client.login(username="admin", password="AdminPass1!")
+        response = self.client.post(reverse("approval"), {
+            f"status_{self.paid_leave.id}": "1",
+        })
+        self.assertRedirects(response, reverse("approval"))
+
+        self.paid_leave.refresh_from_db()
+        self.assertEqual(self.paid_leave.status, self.approved)
+        self.assertEqual(self.paid_leave.approver, self.admin)
+
+    def test_post_rejects_request(self):
+        """却下するとステータスが更新されること"""
+        self.client.login(username="admin", password="AdminPass1!")
+        self.client.post(reverse("approval"), {f"status_{self.paid_leave.id}": "2"})
+
+        self.paid_leave.refresh_from_db()
+        self.assertEqual(self.paid_leave.status, self.rejected)
+
+    def test_post_ignores_pending_value(self):
+        """Pending のままの項目は更新されないこと"""
+        self.client.login(username="admin", password="AdminPass1!")
+        self.client.post(reverse("approval"), {f"status_{self.paid_leave.id}": "0"})
+
+        self.paid_leave.refresh_from_db()
+        self.assertEqual(self.paid_leave.status, self.pending)
+        self.assertIsNone(self.paid_leave.approver)
+
+    def test_post_ignores_non_numeric_id(self):
+        """数値でない ID を含むキーは無視されること"""
+        self.client.login(username="admin", password="AdminPass1!")
+        response = self.client.post(reverse("approval"), {
+            "status_paid_leave_1": "1",
+            "csrfmiddlewaretoken": "dummy",
+        })
+        self.assertRedirects(response, reverse("approval"))
+
+        self.paid_leave.refresh_from_db()
+        self.assertEqual(self.paid_leave.status, self.pending)
+
+    def test_post_ignores_unknown_id(self):
+        """存在しない ID は無視され、エラーにならないこと"""
+        self.client.login(username="admin", password="AdminPass1!")
+        response = self.client.post(reverse("approval"), {"status_999999": "1"})
+        self.assertRedirects(response, reverse("approval"))
+
+    def test_post_ignores_unrelated_key(self):
+        """status_ 以外のキーは無視されること"""
+        self.client.login(username="admin", password="AdminPass1!")
+        response = self.client.post(reverse("approval"), {"comment_1": "1"})
+        self.assertRedirects(response, reverse("approval"))
+
+
+# ------------------------------------------------------------------ user_id 生成
+
+class TestUserIdGeneration(BaseViewTestCase):
+    """user_id の一意性確保"""
+
+    def test_regenerates_user_id_on_collision(self):
+        """事前確認をすり抜けた重複は再生成によって解消されること"""
+        User.objects.create_user(
+            user_id="123456", username="existing", password="SecurePass1!"
+        )
+
+        cleaned_data = {
+            "username": "newuser",
+            "email": "new@example.com",
+            "password1": "SecurePass1!",
+            "department": self.dept,
+        }
+
+        with patch.object(
+            IDGenerator, "create_id", side_effect=["123456", "654321"]
+        ), patch.object(
+            UserRepository, "user_id_exists", side_effect=[False, True, False]
+        ):
+            UserUseCase.create_user_entry(cleaned_data)
+
+        self.assertTrue(User.objects.filter(user_id="654321").exists())
+
+    def test_raises_when_other_constraint_is_violated(self):
+        """user_id 以外の一意制約違反はそのまま送出されること"""
+        cleaned_data = {
+            "username": "testuser",  # 既存ユーザーと重複
+            "email": "dup@example.com",
+            "password1": "SecurePass1!",
+            "department": self.dept,
+        }
+
+        with self.assertRaises(IntegrityError):
+            UserUseCase.create_user_entry(cleaned_data)

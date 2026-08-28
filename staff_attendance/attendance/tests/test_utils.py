@@ -21,6 +21,11 @@ class TestIDGenerator(SimpleTestCase):
         ids = {IDGenerator.create_id() for _ in range(50)}
         self.assertGreater(len(ids), 45)
 
+    def test_contains_digits_only(self):
+        """要件の「6 桁」に従い数字のみで構成されること"""
+        for _ in range(50):
+            self.assertTrue(IDGenerator.create_id().isdecimal())
+
 
 class TestRoundCalculate(SimpleTestCase):
     def setUp(self):
