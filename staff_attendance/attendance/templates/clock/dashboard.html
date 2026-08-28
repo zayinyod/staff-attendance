@@ -6,6 +6,9 @@
 
 <div class="main">
   <form method="GET">
+    {% if has_invalid_date %}
+      <div class="error"><p>Invalid date. Showing today's summary.</p></div>
+    {% endif %}
     <h1>{{ date }}</h1>
     <p class="description">{{ summary }}</p>
   </form>
