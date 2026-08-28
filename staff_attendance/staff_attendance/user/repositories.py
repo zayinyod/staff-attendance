@@ -7,7 +7,6 @@ class UserRepository(BaseRepository):
 
     @classmethod
     def save(cls, user_entry: UserDomain):
-        print(f"Saving User: {user_entry}")
         user = cls.model(
             user_id=user_entry.user_id,
             username=user_entry.username,
@@ -15,7 +14,9 @@ class UserRepository(BaseRepository):
             department=user_entry.department,
         )
         user.set_password(user_entry.password)
-        user.save()
+        # user_idは自動採番でない主キーであり、save()は既存行のUPDATEを試みる。
+        # 重複時に既存ユーザーを上書きしないよう、INSERTを強制する。
+        user.save(force_insert=True)
 
     @classmethod
     def user_id_exists(cls, user_id):

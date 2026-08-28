@@ -7,7 +7,7 @@ class PaidLeaveRepository(BaseRepository):
     model = PaidLeave
 
     @classmethod
-    def _workflow_codes(cls):
+    def workflow_codes(cls):
         return CodeMasterRepository.workflow_code_master()
 
     @classmethod
@@ -23,14 +23,17 @@ class PaidLeaveRepository(BaseRepository):
         paid_leave.save()
 
     @classmethod
-    def update(cls, id, status, approver):
-        this_paid_leave = cls.get(id=id)
-        new_status = cls._workflow_codes().get(status)
-        this_paid_leave.status = new_status
+    def update(cls, id, status, approver) -> bool:
+        this_paid_leave = cls.filter(id=id).first()
+        if this_paid_leave is None:
+            return False
+
+        this_paid_leave.status = cls.workflow_codes().get(status)
         this_paid_leave.approver = approver
         this_paid_leave.save()
+        return True
 
     @classmethod
     def get_pending(cls):
-        status = cls._workflow_codes().get("pending")
+        status = cls.workflow_codes().get("pending")
         return cls.filter(status=status)

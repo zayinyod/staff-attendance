@@ -13,7 +13,6 @@ class WorkflowBase(models.Model):
         CodeMaster,
         on_delete=models.PROTECT,
         limit_choices_to={"code_type": "workflow_status"},
-        default="0",
         related_name="%(class)s_workflows_status",
     )
     approver = models.ForeignKey(

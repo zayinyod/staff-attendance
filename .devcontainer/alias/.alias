@@ -14,4 +14,4 @@ alias gs="git status"
 alias hg="history | grep"
 alias ll='ls -alF --color=auto'
 alias tl="tail"
-alias run="cd /workspaces/staff-attendance/staff_attendance && python manage.py runserver"
+alias run="cd /workspaces/staff_attendance/staff_attendance && python manage.py runserver"

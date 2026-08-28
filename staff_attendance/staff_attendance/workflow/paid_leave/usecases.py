@@ -6,7 +6,7 @@ class PaidLeaveEntry:
 
     @classmethod
     def create_request(cls, user, cleaned_data):
-        pending_status = cls.paid_leave_repository._workflow_codes().get("pending")
+        pending_status = cls.paid_leave_repository.workflow_codes().get("pending")
         paid_leave_request = PaidLeaveDomain(
             user=user,
             status=pending_status,
@@ -17,7 +17,7 @@ class PaidLeaveEntry:
         cls.paid_leave_repository.create(paid_leave_request)
 
     @classmethod
-    def approve(cls, id, status_code, approver):
+    def approve(cls, id, status_code, approver) -> bool:
         if status_code not in ["1", "2"]:
             raise ValueError("Invalid code. Must be 'approved' or 'rejected'.")
 

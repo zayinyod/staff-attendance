@@ -1,0 +1,27 @@
+[
+  {
+    "model": "attendance.department",
+    "pk": 1,
+    "fields": {"name": "Behavioral Science"}
+  },
+  {
+    "model": "attendance.department",
+    "pk": 2,
+    "fields": {"name": "Digital Forensics"}
+  },
+  {
+    "model": "attendance.department",
+    "pk": 3,
+    "fields": {"name": "Operational Technology"}
+  },
+  {
+    "model": "attendance.department",
+    "pk": 4,
+    "fields": {"name": "Intelligence Analysis"}
+  },
+  {
+    "model": "attendance.department",
+    "pk": 5,
+    "fields": {"name": "Cyber"}
+  }
+]
