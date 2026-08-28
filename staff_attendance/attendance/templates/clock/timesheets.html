@@ -1,0 +1,70 @@
+{% extends "frame.html" %}
+{% load static %}
+{% block title %}Timesheets{% endblock %}
+{% block header %}<link rel="stylesheet" href="{% static 'css/workflow.css' %}">{% endblock %}
+{% block body %}
+
+<div class="main">
+  <h1>Timesheets</h1>
+  <p class="description">{{ current_month|date:"F Y" }}</p>
+
+  {% if has_invalid_month %}
+    <div class="error"><p>Invalid month. Showing the current month.</p></div>
+  {% endif %}
+
+  <form method="GET">
+    {% for field in form %}{{ field }}{% endfor %}
+    <button class="btn" type="submit">Show</button>
+  </form>
+
+  <p class="description">
+    {% if previous_month %}
+      <a href="?year={{ previous_month.year }}&amp;month={{ previous_month.month }}">&lt; Previous</a>
+    {% endif %}
+    {% if next_month %}
+      <a href="?year={{ next_month.year }}&amp;month={{ next_month.month }}">Next &gt;</a>
+    {% endif %}
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 16%;">Date</th>
+        <th style="width: 12%;">In</th>
+        <th style="width: 12%;">Out</th>
+        <th style="width: 15%;">Work</th>
+        <th style="width: 15%;">Night</th>
+        <th style="width: 15%;">Break</th>
+        <th style="width: 15%;">Overtime</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in daily_records %}
+      <tr>
+        <td>
+          <a href="{% url 'dashboard' %}?date={{ record.date|date:'Y-m-d' }}">
+            {{ record.date|date:"m/d (D)" }}
+          </a>
+        </td>
+        <td>{% if record.summary.punch_in %}{{ record.summary.punch_in }}{% else %}-{% endif %}</td>
+        <td>{% if record.summary.punch_out %}{{ record.summary.punch_out }}{% else %}-{% endif %}</td>
+        <td>{{ record.summary.work_duration|floatformat:2 }}</td>
+        <td>{{ record.summary.night_work|floatformat:2 }}</td>
+        <td>{{ record.summary.break_time|floatformat:2 }}</td>
+        <td>{{ record.summary.overtime_duration|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="3">Total</th>
+        <th>{{ totals.total_work_time|floatformat:2 }}</th>
+        <th>{{ totals.total_night_work|floatformat:2 }}</th>
+        <th>{{ totals.total_break_time|floatformat:2 }}</th>
+        <th>{{ totals.total_overtime|floatformat:2 }}</th>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+{% endblock %}

@@ -5,6 +5,7 @@
   <ul class="sidebar-menu">
     <li><a href="{% url 'dashboard' %}">DASHBOARD</a></li>
     <li><a href="{% url 'clock' %}">CLOCK</a></li>
+    <li><a href="{% url 'timesheets' %}">TIMESHEETS</a></li>
     <li>
       {% if request.user.is_superuser %}
         <a href="{% url 'select' %}">WORKFLOW</a>
