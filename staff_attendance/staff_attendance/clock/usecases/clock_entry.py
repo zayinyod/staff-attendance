@@ -17,6 +17,17 @@ class ClockEntry:
         cls.clock_repository.save(clock_entry)
 
     @classmethod
+    def clock_codes(cls) -> dict:
+        return cls.clock_repository.clock_codes()
+
+    @classmethod
+    def has_in_record(cls, user, date) -> bool:
+        """
+        指定日にIN打刻が存在するかを判定する
+        """
+        return cls.clock_repository.get_clock(user, date).get("in_clock") is not None
+
+    @classmethod
     def get_in_breaktime_and_location(cls, user):
         in_record = cls.clock_repository.get_today_in_record(user)
         if in_record:

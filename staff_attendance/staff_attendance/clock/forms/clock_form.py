@@ -38,7 +38,7 @@ class ClockForm(ModelForm):
 
     def initialize_fields(self):
         if self.user:
-            codes = ClockEntry.clock_repository._clock_codes()
+            codes = ClockEntry.clock_codes()
             to_in = codes.get("to_in")
             to_out = codes.get("to_out")
             break_time, location, has_in_record = ClockEntry.get_in_breaktime_and_location(self.user)
@@ -52,6 +52,25 @@ class ClockForm(ModelForm):
                 "class": "input",
                 "placeholder": field.label,
             })
+
+    def clean(self):
+        """
+        IN打刻が存在しない日にOUT打刻を登録することを防ぐ
+        """
+        cleaned_data = super().clean()
+        clock = cleaned_data.get("clock")
+        date_stamp = cleaned_data.get("date_stamp")
+
+        if not self.user or clock is None or date_stamp is None:
+            return cleaned_data
+
+        to_out = ClockEntry.clock_codes().get("to_out")
+        if clock == to_out and not ClockEntry.has_in_record(self.user, date_stamp):
+            raise forms.ValidationError(
+                "Cannot clock out without a clock-in record on the same date."
+            )
+
+        return cleaned_data
 
     def clean_break_time(self):
         break_time = self.cleaned_data.get("break_time")
