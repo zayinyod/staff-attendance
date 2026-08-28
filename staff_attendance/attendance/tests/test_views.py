@@ -6,6 +6,7 @@ setUpTestData でコードマスターを作成してから self.client でリ�
 ClockRepository 等のクラス定義時 DB クエリが正しいデータを参照できる。
 """
 from datetime import date
+from decimal import Decimal
 from unittest.mock import patch
 from django.db import IntegrityError
 from django.test import TestCase
@@ -432,3 +433,84 @@ class TestUserIdGeneration(BaseViewTestCase):
 
         with self.assertRaises(IntegrityError):
             UserUseCase.create_user_entry(cleaned_data)
+
+
+# ------------------------------------------------------------------ Timesheets
+
+class TestTimesheetsView(BaseViewTestCase):
+    """月次一覧画面"""
+
+    def setUp(self):
+        self.client.login(username="testuser", password="SecurePass1!")
+        self.today = timezone.localdate()
+
+    def test_get_redirects_if_not_logged_in(self):
+        """未認証ユーザーはログインページへリダイレクトされること"""
+        self.client.logout()
+        response = self.client.get(reverse("timesheets"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response.url)
+
+    def test_get_shows_current_month_by_default(self):
+        """年月未指定の場合は当月が表示されること"""
+        response = self.client.get(reverse("timesheets"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "clock/timesheets.html")
+        self.assertEqual(response.context["current_month"].year, self.today.year)
+        self.assertEqual(response.context["current_month"].month, self.today.month)
+        self.assertFalse(response.context["has_invalid_month"])
+
+    def test_get_lists_all_days_of_month(self):
+        """指定した月の日数分の行が返ること"""
+        response = self.client.get(reverse("timesheets"), {"year": 2024, "month": 2})
+        self.assertEqual(len(response.context["daily_records"]), 29)
+
+    def test_get_with_invalid_month_falls_back_to_current_month(self):
+        """範囲外の月は当月にフォールバックし、通知が表示されること"""
+        response = self.client.get(reverse("timesheets"), {"year": 2024, "month": 13})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Invalid month")
+        self.assertEqual(response.context["current_month"].month, self.today.month)
+
+    def test_get_with_non_numeric_month_falls_back(self):
+        """数値でない年月も当月にフォールバックすること"""
+        response = self.client.get(reverse("timesheets"), {"year": "abc", "month": "x"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Invalid month")
+
+    def test_get_with_year_before_start_falls_back(self):
+        """選択可能な範囲より前の年は当月にフォールバックすること"""
+        response = self.client.get(reverse("timesheets"), {"year": 1999, "month": 4})
+        self.assertContains(response, "Invalid month")
+
+    def test_totals_reflect_clock_records(self):
+        """打刻レコードが合計に反映されること"""
+        Clock.objects.create(
+            user=self.user, date_stamp=date(2024, 4, 1), time_stamp="09:00",
+            clock=self.clock_in, break_time=Decimal("1.00"), location=self.location_office,
+        )
+        Clock.objects.create(
+            user=self.user, date_stamp=date(2024, 4, 1), time_stamp="18:00",
+            clock=self.clock_out, break_time=Decimal("1.00"), location=self.location_office,
+        )
+
+        response = self.client.get(reverse("timesheets"), {"year": 2024, "month": 4})
+        self.assertAlmostEqual(response.context["totals"]["total_work_time"], 8.0, places=2)
+
+    def test_previous_and_next_month_navigation(self):
+        """前月・翌月のリンク先が正しいこと"""
+        response = self.client.get(reverse("timesheets"), {"year": 2024, "month": 1})
+        self.assertEqual(response.context["previous_month"], date(2023, 12, 31))
+        self.assertEqual(response.context["next_month"], date(2024, 2, 1))
+
+    def test_next_month_is_hidden_beyond_selectable_years(self):
+        """選択可能な範囲を超える翌月は表示されないこと"""
+        response = self.client.get(
+            reverse("timesheets"), {"year": self.today.year, "month": 12}
+        )
+        self.assertIsNone(response.context["next_month"])
+
+    def test_previous_month_is_hidden_before_start_year(self):
+        """選択可能な範囲より前の前月は表示されないこと"""
+        response = self.client.get(reverse("timesheets"), {"year": 2020, "month": 1})
+        self.assertIsNone(response.context["previous_month"])
