@@ -23,27 +23,11 @@ class BaseViewTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.dept = Department.objects.create(name="Engineering")
-        cls.clock_in = CodeMaster.objects.create(
-            code_type="clock", code="0", description="In"
-        )
-        cls.clock_out = CodeMaster.objects.create(
-            code_type="clock", code="1", description="Out"
-        )
-        cls.location_office = CodeMaster.objects.create(
-            code_type="location", code="0", description="Office"
-        )
-        cls.location_telework = CodeMaster.objects.create(
-            code_type="location", code="1", description="Telework"
-        )
-        CodeMaster.objects.create(
-            code_type="workflow_status", code="0", description="Pending"
-        )
-        CodeMaster.objects.create(
-            code_type="workflow_status", code="1", description="Approved"
-        )
-        CodeMaster.objects.create(
-            code_type="workflow_status", code="2", description="Rejected"
-        )
+        # コードマスターはマイグレーション 0016 で投入済みのものを参照する
+        cls.clock_in = CodeMaster.objects.get(code_type="clock", code="0")
+        cls.clock_out = CodeMaster.objects.get(code_type="clock", code="1")
+        cls.location_office = CodeMaster.objects.get(code_type="location", code="0")
+        cls.location_telework = CodeMaster.objects.get(code_type="location", code="1")
         cls.user = User.objects.create_user(
             user_id="U00001",
             username="testuser",
