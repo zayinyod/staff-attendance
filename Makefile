@@ -27,7 +27,7 @@ DOCKER_RUN_IT = docker run --rm -it --user $(HOST_UID):$(HOST_GID) \
 .DEFAULT_GOAL := help
 
 .PHONY: help build rebuild test test-file check migrations-check migrations \
-        migrate lint serve shell django-shell collectstatic clean
+        migrate seed loaddata lint serve shell django-shell collectstatic clean
 
 help: ## タスク一覧を表示する
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -57,6 +57,11 @@ migrations: ## マイグレーションを作成する
 
 migrate: ## マイグレーションを適用する
 	$(DOCKER_RUN) python manage.py migrate
+
+seed: migrate loaddata ## 新規環境の初期データを投入する [migrate + loaddata]
+
+loaddata: ## 所属部署のフィクスチャを読み込む
+	$(DOCKER_RUN) python manage.py loaddata departments
 
 lint: ## flake8 で静的検査を実行する
 	docker run --rm --user $(HOST_UID):$(HOST_GID) \
