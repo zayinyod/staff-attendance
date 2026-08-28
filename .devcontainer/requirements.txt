@@ -1,4 +1,7 @@
-Django
-django-environ
-djangorestframework
-django-cors-headers
+# バージョンを固定する。
+# ベースイメージ [bullseye] の SQLite は 3.34 であり、
+# SQLite 3.37 以上を要求する Django 6.0 以降は動作しない。
+Django~=5.1.0
+django-environ~=0.14.0
+djangorestframework~=3.16.0
+django-cors-headers~=4.9.0
