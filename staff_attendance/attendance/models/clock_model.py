@@ -23,7 +23,6 @@ class Clock(models.Model):
         CodeMaster,
         on_delete=models.PROTECT,
         limit_choices_to={"code_type": "clock"},
-        default="0",
         related_name="clock_codes",
         verbose_name="in/out",
     )
@@ -37,7 +36,6 @@ class Clock(models.Model):
         CodeMaster,
         on_delete=models.PROTECT,
         limit_choices_to={"code_type": "location"},
-        default="0",
         related_name="location_codes",
     )
 
