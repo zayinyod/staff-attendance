@@ -76,11 +76,21 @@ make serve   # 開発サーバーを起動する（http://localhost:8000）
 | `/user_entry/` | ユーザー登録 | - |
 | `/clock/` | 打刻 | 認証済み |
 | `/clock/dashboard/` | ダッシュボード（日次集計） | 認証済み |
+| `/clock/timesheets/` | 勤怠一覧（月次集計） | 認証済み |
 | `/workflow/request/` | 申請メニュー | 認証済み |
 | `/workflow/request/paid_leave/` | 有給申請 | 認証済み |
 | `/workflow/` | ワークフロー選択 | スーパーユーザ |
 | `/workflow/approval/` | 承認 | スーパーユーザ |
 | `/admin/` | Django 管理画面 | スタッフ |
+
+### ショートカットキー
+
+認証済みの画面で使用できる。入力欄にフォーカスがある間は Esc のみ有効とする。
+
+| キー | 操作 | アクション ID |
+|------|------|---------------|
+| `Alt+O` | サイドバーの開閉 | `sidebar.toggle` |
+| `Esc` | サイドバーを閉じる | `sidebar.close` |
 
 ## アーキテクチャ
 
@@ -168,8 +178,22 @@ staff_attendance/
     ├── id_generator.py
     ├── mixins.py
     ├── now.py
-    └── round_calc.py
+    ├── round_calc.py
+    └── shortcuts.py			# ショートカットキーの割り当て
 ```
+
+### ショートカットキー
+
+割り当て・アクション・キー入力の処理を分離する。
+
+| 役割 | 配置 |
+|------|------|
+| 割り当て | `util/shortcuts.py`。アクション ID とキー表記のリストを対応させ、コンテキストプロセッサ `shortcut_bindings` で `frame.html` に JSON として埋め込む |
+| アクション | `static/js/shortcuts/actions.js` に登録する。画面側のモジュールが ID と処理を登録する [e.g. `toggle.js`] |
+| キー入力 | `static/js/shortcuts/keymap.js`。キー入力を正規化し、割り当てを引いてアクションを実行する |
+
+キー表記は修飾キー [`Ctrl` `Alt` `Shift` `Meta`] と主キーを `+` で連結する [e.g. `Alt+O`]。
+ユーザー単位で割り当てを変更する場合は `resolve_shortcuts` で既定値を上書きする。
 
 ### フロントエンド
 
@@ -190,11 +214,11 @@ frontend/
 | ユーザー登録 | 完了 |
 | 打刻（IN / OUT、勤務場所、休憩時間） | 完了 |
 | 日次集計 | 完了 |
-| 月次集計 | ロジックのみ。画面は未実装 |
+| 月次集計 | 完了 |
 | 有給申請、承認 | 完了 |
 | 打刻修正、交通費、勤怠締め | モデルのみ。Usecase / View は未実装 |
 | 承認ルート、有給の付与・管理、給与集計 | 未着手 |
-| テスト | 86 件 |
+| テスト | 106 件 |
 
 ### フロントエンド
 
