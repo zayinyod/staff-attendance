@@ -76,11 +76,21 @@ make serve   # 開発サーバーを起動する（http://localhost:8000）
 | `/user_entry/` | ユーザー登録 | - |
 | `/clock/` | 打刻 | 認証済み |
 | `/clock/dashboard/` | ダッシュボード（日次集計） | 認証済み |
+| `/clock/timesheets/` | 勤怠一覧（月次集計） | 認証済み |
 | `/workflow/request/` | 申請メニュー | 認証済み |
 | `/workflow/request/paid_leave/` | 有給申請 | 認証済み |
 | `/workflow/` | ワークフロー選択 | スーパーユーザ |
 | `/workflow/approval/` | 承認 | スーパーユーザ |
 | `/admin/` | Django 管理画面 | スタッフ |
+
+### ショートカットキー
+
+認証済みの画面で使用できる。入力欄にフォーカスがある間は Esc のみ有効とする。
+
+| キー | 操作 | アクション ID |
+|------|------|---------------|
+| `Alt+O` | サイドバーの開閉 | `sidebar.toggle` |
+| `Esc` | サイドバーを閉じる | `sidebar.close` |
 
 ## アーキテクチャ
 
@@ -125,6 +135,9 @@ staff_attendance/
 ├── attendance/				# urls.py はこの配下に置かない
 │   ├── fixtures/
 │   │   └── departments.json		# 所属部署の初期データ
+│   ├── management/
+│   │   └── commands/
+│   │       └── runserver.py		# 静的ファイルをキャッシュさせない runserver
 │   ├── migrations/
 │   ├── models/				# モデル
 │   │   ├── __init__.py
@@ -168,8 +181,39 @@ staff_attendance/
     ├── id_generator.py
     ├── mixins.py
     ├── now.py
-    └── round_calc.py
+    ├── round_calc.py
+    ├── shortcuts.py			# ショートカットキーの割り当て
+    ├── static_handlers.py		# 開発サーバーの静的ファイル配信
+    ├── storages.py			# 静的ファイルのストレージ
+    └── test_runner.py			# テストランナー
 ```
+
+### 静的ファイル
+
+ブラウザが変更前のファイルをキャッシュから読み込むことを防ぐため、環境ごとに以下の対策を取る。
+
+| 環境 | 対策 | 実装 |
+|------|------|------|
+| 開発 [DEBUG=True] | `runserver` が静的ファイルの応答に `Cache-Control: no-cache` を付与する。未変更のファイルには 304 を返す | `attendance/management/commands/runserver.py`、`util/static_handlers.py` |
+| 本番 [DEBUG=False] | ファイル名に内容のハッシュを付与して配信する。ES Modules の import 先もハッシュ付きの名前に書き換える | `util/storages.py` [ManifestStaticFilesStorage を継承] |
+
+- DEBUG=False で起動する前に `make collectstatic` を実行し、`STATIC_ROOT` にファイルとマニフェストを生成する。未収集のファイルを参照するとページの描画時に例外となる。
+- DEBUG=False では Django は静的ファイルを配信しない。本番の配信方法は未定義である。
+- テストは DEBUG=False で実行されるため、テストランナー [`util/test_runner.py`] がストレージを `StaticFilesStorage` に切り替える。
+- `runserver` を拡張しているため、`INSTALLED_APPS` では `attendance` を `django.contrib.staticfiles` より前に記載する。
+
+### ショートカットキー
+
+割り当て・アクション・キー入力の処理を分離する。
+
+| 役割 | 配置 |
+|------|------|
+| 割り当て | `util/shortcuts.py`。アクション ID とキー表記のリストを対応させ、コンテキストプロセッサ `shortcut_bindings` で `frame.html` に JSON として埋め込む |
+| アクション | `static/js/shortcuts/actions.js` に登録する。画面側のモジュールが ID と処理を登録する [e.g. `toggle.js`] |
+| キー入力 | `static/js/shortcuts/keymap.js`。キー入力を正規化し、割り当てを引いてアクションを実行する |
+
+キー表記は修飾キー [`Ctrl` `Alt` `Shift` `Meta`] と主キーを `+` で連結する [e.g. `Alt+O`]。
+ユーザー単位で割り当てを変更する場合は `resolve_shortcuts` で既定値を上書きする。
 
 ### フロントエンド
 
@@ -190,11 +234,11 @@ frontend/
 | ユーザー登録 | 完了 |
 | 打刻（IN / OUT、勤務場所、休憩時間） | 完了 |
 | 日次集計 | 完了 |
-| 月次集計 | ロジックのみ。画面は未実装 |
+| 月次集計 | 完了 |
 | 有給申請、承認 | 完了 |
 | 打刻修正、交通費、勤怠締め | モデルのみ。Usecase / View は未実装 |
 | 承認ルート、有給の付与・管理、給与集計 | 未着手 |
-| テスト | 86 件 |
+| テスト | 111 件 |
 
 ### フロントエンド
 

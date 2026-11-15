@@ -5,12 +5,12 @@
 {% block body %}
 
 <div class="main">
-  <form>
+  <div class="card">
     <h1>Workflow Select</h1>
     <p class="description">Select a workflow category.</p>
-    <p><a class = "workflow" href="{% url 'request' %}">Request</a></p>
-    <p><a class = "workflow" href="{% url 'approval' %}">Approval</a></p>
-  </form>
+    <p><a class="workflow" href="{% url 'request' %}">Request</a></p>
+    <p><a class="workflow" href="{% url 'approval' %}">Approval</a></p>
+  </div>
 </div>
 
 {% endblock %}

@@ -5,6 +5,12 @@
   --base_color: #1e1e28;
   --base_margin: 0 auto;
   --transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+  --alert_color: #b3261e;  /* 背景 #e1e1d7 に対する色 */
+}
+
+/* Dark Mode は画面全体を反転して表示するため、反転後に意図した色となる値を指定する */
+body.darkmode--activated {
+  --alert_color: #00949e;  /* 反転後 #ff6b61 */
 }
 
 body {
@@ -30,7 +36,9 @@ body {
   text-align: center;
 }
 
-form {
+/* .card は送信を伴わない囲み枠。form と同じ装飾とする */
+form,
+.card {
   border: 2px solid rgba(255,255,255,0.1);
   border-radius: 10px;
   margin: var(--base_margin);
@@ -94,23 +102,19 @@ label {
 
 .message {
   font-size: 1.5rem;
-  color: #ff4422;
-  background: #1E1E28;
-  isolation: isolate;
+  color: var(--alert_color);
 }
 
 .workflow {
   font-size: 0.7rem;
   font-weight: 700;
-  color: #FF4D45;
-  background: #1E1E28;
-  border: 2px solid #FF4D45;
+  color: var(--alert_color);
+  border: 2px solid var(--alert_color);
   border-radius: 5px;
   margin: var(--base_margin);
   margin-top: 0.6rem;
   padding: 8px 20px;
   width: fit-content;
-  isolation: isolate;
   text-decoration: none;
 }
 

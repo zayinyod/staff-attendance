@@ -203,3 +203,83 @@ class TestClockCalculate(TestCase):
         result = ClockCalculate.monthly_summary(None, 2024, 4)
         for key in ("total_work_time", "total_night_work", "total_break_time", "total_overtime"):
             self.assertIn(key, result)
+
+
+class TestMonthlyDetail(TestCase):
+    """月次の日別明細 (monthly_detail)"""
+
+    def setUp(self):
+        self._original_repo = ClockCalculate.clock_repository
+        self.mock_repo = MagicMock()
+        ClockCalculate.clock_repository = self.mock_repo
+
+    def tearDown(self):
+        ClockCalculate.clock_repository = self._original_repo
+
+    def _make_record(self, date_str, time_str, break_time=Decimal("1.00")):
+        record = MagicMock()
+        record.date_stamp = datetime.strptime(date_str, "%Y-%m-%d").date()
+        record.time_stamp = datetime.strptime(time_str, "%H:%M").time()
+        record.break_time = break_time
+        return record
+
+    def test_month_dates_covers_all_days(self):
+        """月の日数分の日付が生成されること"""
+        self.assertEqual(len(ClockCalculate.month_dates(2024, 4)), 30)
+        self.assertEqual(len(ClockCalculate.month_dates(2024, 1)), 31)
+
+    def test_month_dates_handles_leap_year(self):
+        """うるう年の 2 月は 29 日になること"""
+        self.assertEqual(len(ClockCalculate.month_dates(2024, 2)), 29)
+        self.assertEqual(len(ClockCalculate.month_dates(2023, 2)), 28)
+
+    def test_daily_records_count_matches_month_length(self):
+        """日別明細が月の日数分だけ返ること"""
+        self.mock_repo.get_clock.return_value = {"in_clock": None, "out_clock": None}
+        detail = ClockCalculate.monthly_detail(None, 2024, 4)
+        self.assertEqual(len(detail["daily_records"]), 30)
+        self.assertEqual(detail["daily_records"][0]["date"], date(2024, 4, 1))
+        self.assertEqual(detail["daily_records"][-1]["date"], date(2024, 4, 30))
+
+    def test_daily_record_holds_summary(self):
+        """各明細が日次集計を保持すること"""
+        day_in = self._make_record("2024-04-01", "09:00")
+        day_out = self._make_record("2024-04-01", "18:00")
+
+        def get_clock_side_effect(user, d):
+            if d == date(2024, 4, 1):
+                return {"in_clock": day_in, "out_clock": day_out}
+            return {"in_clock": None, "out_clock": None}
+
+        self.mock_repo.get_clock.side_effect = get_clock_side_effect
+
+        detail = ClockCalculate.monthly_detail(None, 2024, 4)
+        first_day = detail["daily_records"][0]["summary"]
+        self.assertEqual(first_day["punch_in"], "09:00")
+        self.assertEqual(first_day["punch_out"], "18:00")
+        self.assertAlmostEqual(first_day["work_duration"], 8.0, places=2)
+
+    def test_totals_match_sum_of_daily_records(self):
+        """合計が日別明細の合算と一致すること"""
+        day_in = self._make_record("2024-04-01", "09:00")
+        day_out = self._make_record("2024-04-01", "20:00")
+
+        def get_clock_side_effect(user, d):
+            if d in (date(2024, 4, 1), date(2024, 4, 2)):
+                return {"in_clock": day_in, "out_clock": day_out}
+            return {"in_clock": None, "out_clock": None}
+
+        self.mock_repo.get_clock.side_effect = get_clock_side_effect
+
+        detail = ClockCalculate.monthly_detail(None, 2024, 4)
+        expected = sum(r["summary"]["work_duration"] for r in detail["daily_records"])
+        self.assertAlmostEqual(detail["totals"]["total_work_time"], expected, places=2)
+        self.assertGreater(detail["totals"]["total_overtime"], 0.0)
+
+    def test_monthly_summary_returns_totals_of_detail(self):
+        """monthly_summary が monthly_detail の合計と一致すること"""
+        self.mock_repo.get_clock.return_value = {"in_clock": None, "out_clock": None}
+        self.assertEqual(
+            ClockCalculate.monthly_summary(None, 2024, 4),
+            ClockCalculate.monthly_detail(None, 2024, 4)["totals"],
+        )

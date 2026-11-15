@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
-from django.utils import timezone
+import calendar
+from datetime import date, datetime, timedelta
 from util.now import Now
 from util.round_calc import RoundCalculate
 from ..repositories import ClockRepository
@@ -103,27 +103,53 @@ class ClockCalculate:
         }
 
     @classmethod
-    def monthly_summary(cls, user, year, month):
-        start_date = timezone.datetime(year, month, 1)
-        end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    def month_dates(cls, year, month) -> list:
+        """
+        指定した年月に含まれる全ての日付を返す
+        """
+        days_in_month = calendar.monthrange(year, month)[1]
 
-        date_range = [start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1)]
+        return [date(year, month, day) for day in range(1, days_in_month + 1)]
 
-        total_work_time = 0.0
-        total_night_work = 0.0
-        total_break_time = 0.0
-        total_overtime = 0.0
-
-        for single_date in date_range:
-            daily_data = cls.daily_summary(user, single_date.date())
-            total_work_time += daily_data["work_duration"]
-            total_night_work += daily_data["night_work"]
-            total_break_time += daily_data["break_time"]
-            total_overtime += daily_data["overtime_duration"]
+    @classmethod
+    def monthly_detail(cls, user, year, month) -> dict:
+        """
+        日ごとの集計と、それを合算した月次合計をあわせて返す
+        """
+        daily_records = [
+            {"date": single_date, "summary": cls.daily_summary(user, single_date)}
+            for single_date in cls.month_dates(year, month)
+        ]
 
         return {
-            "total_work_time": total_work_time,
-            "total_night_work": total_night_work,
-            "total_break_time": total_break_time,
-            "total_overtime": total_overtime,
+            "daily_records": daily_records,
+            "totals": cls.total_of(daily_records),
         }
+
+    @classmethod
+    def total_of(cls, daily_records) -> dict:
+        """
+        日次集計のリストを合算する
+        """
+        totals = {
+            "total_work_time": 0.0,
+            "total_night_work": 0.0,
+            "total_break_time": 0.0,
+            "total_overtime": 0.0,
+        }
+        summary_keys = {
+            "total_work_time": "work_duration",
+            "total_night_work": "night_work",
+            "total_break_time": "break_time",
+            "total_overtime": "overtime_duration",
+        }
+
+        for record in daily_records:
+            for total_key, summary_key in summary_keys.items():
+                totals[total_key] += record["summary"][summary_key]
+
+        return totals
+
+    @classmethod
+    def monthly_summary(cls, user, year, month) -> dict:
+        return cls.monthly_detail(user, year, month)["totals"]

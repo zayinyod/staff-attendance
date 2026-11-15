@@ -1,0 +1,97 @@
+/*
+ * 期間を選択して集計表を表示する画面 [Dashboard / Timesheets] の共通スタイル。
+ * workflow.css の後に読み込む。
+ *
+ * Dark Mode は darkmode-js が画面全体の色を反転して表示する。
+ * 色は Light Mode の値で指定し、反転後もコントラスト比 4.5:1 以上となる値を選んでいる。
+ */
+
+:root {
+  --panel_link_on_page: #1f6b6b;   /* 背景 #e1e1d7 に対する色 */
+  --panel_link_on_table: #66cccc;  /* 表の背景 #202122 / #27292d に対する色 */
+  --panel_control_color: #1e1e28;
+  --panel_control_background: #f7f4e9;
+  --panel_control_height: 2.5rem;
+}
+
+/* カード: 期間の選択・前後への移動・表をまとめて囲む */
+.panel {
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  margin: var(--base_margin);
+  padding: 50px 35px;
+  width: min(900px, 100%);
+  box-sizing: border-box;
+  box-shadow: 0 0 40px rgba(8,7,16,0.6);
+}
+
+/* workflow.css の form はカードの装飾を持つため、カード内では打ち消す */
+.panel form {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  width: auto;
+  height: auto;
+  box-shadow: none;
+}
+
+/* 期間の選択欄と Show を同じ高さで 1 行に並べる */
+.period-picker {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.period-picker .input,
+.period-picker .input:hover {
+  font-size: 0.9rem;
+  color: var(--panel_control_color);
+  background: var(--panel_control_background);
+  margin: 0;
+  padding: 0 0.75rem;
+  height: var(--panel_control_height);
+  min-width: 6rem;
+}
+
+.period-picker .btn {
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 0 2rem;
+  height: var(--panel_control_height);
+}
+
+.period-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.period-nav a {
+  font-size: 0.8rem;
+  color: var(--panel_link_on_page);
+  text-decoration: none;
+}
+
+.period-nav a:hover {
+  text-decoration: underline;
+}
+
+/* 狭い画面では表のみ横スクロールさせる */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.panel table {
+  margin: 0;
+}
+
+.panel td a {
+  color: var(--panel_link_on_table);
+  text-decoration: none;
+}
+
+.panel td a:hover {
+  text-decoration: underline;
+}

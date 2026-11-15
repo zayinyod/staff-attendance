@@ -1,17 +1,58 @@
 {% extends "frame.html" %}
 {% load static %}
 {% block title %}Dashboard{% endblock %}
-{% block header %}<link rel="stylesheet" href="{% static 'css/form.css' %}">{% endblock %}
+{% block header %}
+<link rel="stylesheet" href="{% static 'css/workflow.css' %}">
+<link rel="stylesheet" href="{% static 'css/panel.css' %}">
+{% endblock %}
 {% block body %}
 
 <div class="main">
-  <form method="GET">
+  <div class="panel">
+    <h1>Dashboard</h1>
+    <p class="description">{{ date|date:"F j, Y (D)" }}</p>
+
     {% if has_invalid_date %}
       <div class="error"><p>Invalid date. Showing today's summary.</p></div>
     {% endif %}
-    <h1>{{ date }}</h1>
-    <p class="description">{{ summary }}</p>
-  </form>
+
+    <form method="GET" class="period-picker">
+      <input class="input" type="date" name="date" value="{{ date|date:'Y-m-d' }}">
+      <button class="btn" type="submit">Show</button>
+    </form>
+
+    <nav class="period-nav">
+      <span></span>
+      <span>
+        <a href="{% url 'timesheets' %}?year={{ date|date:'Y' }}&amp;month={{ date|date:'n' }}">Timesheets &gt;</a>
+      </span>
+    </nav>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 16%;">In</th>
+            <th style="width: 16%;">Out</th>
+            <th style="width: 17%;">Work</th>
+            <th style="width: 17%;">Night</th>
+            <th style="width: 17%;">Break</th>
+            <th style="width: 17%;">Overtime</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{% if summary.punch_in %}{{ summary.punch_in }}{% else %}-{% endif %}</td>
+            <td>{% if summary.punch_out %}{{ summary.punch_out }}{% else %}-{% endif %}</td>
+            <td>{{ summary.work_duration|floatformat:2 }}</td>
+            <td>{{ summary.night_work|floatformat:2 }}</td>
+            <td>{{ summary.break_time|floatformat:2 }}</td>
+            <td>{{ summary.overtime_duration|floatformat:2 }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 {% endblock %}

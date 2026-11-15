@@ -7,6 +7,7 @@ from datetime import datetime, time
 from util.id_generator import IDGenerator
 from util.round_calc import RoundCalculate
 from util.now import Now
+from util.shortcuts import DEFAULT_SHORTCUTS, resolve_shortcuts
 
 
 class TestIDGenerator(SimpleTestCase):
@@ -110,3 +111,16 @@ class TestNow(SimpleTestCase):
     def test_time_str_zero_padding(self):
         """時分はゼロパディング"""
         self.assertEqual(Now.time_str(time(8, 5)), "08:05")
+
+
+class TestShortcuts(SimpleTestCase):
+
+    def test_resolve_returns_default_bindings(self):
+        """既定の割り当てを返す"""
+        self.assertEqual(resolve_shortcuts(user=None), DEFAULT_SHORTCUTS)
+
+    def test_resolve_returns_independent_copy(self):
+        """返り値を変更しても既定値に影響しない"""
+        bindings = resolve_shortcuts(user=None)
+        bindings["sidebar.toggle"].append("Alt+X")
+        self.assertEqual(DEFAULT_SHORTCUTS["sidebar.toggle"], ["Alt+O"])

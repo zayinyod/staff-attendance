@@ -1,0 +1,24 @@
+/*
+ * Timesheets 固有のスタイル。panel.css の後に読み込む。
+ *
+ * Dark Mode は画面全体の反転で表示するため、文字色の色相も反転する [赤 → シアン]。
+ * Dark Mode では、反転後に意図した色となる値を指定する。
+ */
+
+:root {
+  --timesheets_sunday: #ff8a8a;    /* 表の背景 #202122 に対する色 */
+  --timesheets_saturday: #8ab8ff;
+}
+
+body.darkmode--activated {
+  --timesheets_sunday: #48e3e3;    /* 反転後 #b71c1c */
+  --timesheets_saturday: #f2b85e;  /* 反転後 #0d47a1 */
+}
+
+.panel td.sunday a {
+  color: var(--timesheets_sunday);
+}
+
+.panel td.saturday a {
+  color: var(--timesheets_saturday);
+}

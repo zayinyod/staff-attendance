@@ -42,10 +42,11 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    # runserver を拡張しているため、django.contrib.staticfiles より前に記載する
+    "attendance",
     "django.contrib.staticfiles",
     'rest_framework',
     'corsheaders',
-    "attendance",
 ]
 
 AUTH_USER_MODEL = "attendance.User"
@@ -79,6 +80,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "util.shortcuts.shortcut_bindings",
             ],
         },
     },
@@ -139,6 +141,14 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+# DEBUG=False では collectstatic で生成したマニフェストを参照する
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "util.storages.ModuleAwareManifestStaticFilesStorage"},
+}
+
+TEST_RUNNER = "util.test_runner.StaticFilesTestRunner"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
