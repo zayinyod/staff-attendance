@@ -1,96 +1,24 @@
 /*
- * Timesheets 固有のスタイル。workflow.css の後に読み込む。
+ * Timesheets 固有のスタイル。panel.css の後に読み込む。
  *
- * Dark Mode は darkmode-js が画面全体の色を反転して表示する。
- * 色は Light Mode の値で指定し、反転後もコントラスト比 4.5:1 以上となる値を選んでいる。
+ * Dark Mode は画面全体の反転で表示するため、文字色の色相も反転する [赤 → シアン]。
+ * Dark Mode では、反転後に意図した色となる値を指定する。
  */
 
 :root {
-  --timesheets_link_on_page: #1f6b6b;   /* 背景 #e1e1d7 に対する色 */
-  --timesheets_link_on_table: #66cccc;  /* 表の背景 #202122 / #27292d に対する色 */
-  --timesheets_select_color: #1e1e28;
-  --timesheets_select_background: #f7f4e9;
-  --timesheets_control_height: 2.5rem;
+  --timesheets_sunday: #ff8a8a;    /* 表の背景 #202122 に対する色 */
+  --timesheets_saturday: #8ab8ff;
 }
 
-/* カード: 年月選択・前月翌月リンク・表をまとめて囲む */
-.panel {
-  border: 2px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  margin: var(--base_margin);
-  padding: 50px 35px;
-  width: min(900px, 100%);
-  box-sizing: border-box;
-  box-shadow: 0 0 40px rgba(8,7,16,0.6);
+body.darkmode--activated {
+  --timesheets_sunday: #48e3e3;    /* 反転後 #b71c1c */
+  --timesheets_saturday: #f2b85e;  /* 反転後 #0d47a1 */
 }
 
-/* workflow.css の form はカードの装飾を持つため、カード内では打ち消す */
-.panel form {
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  width: auto;
-  height: auto;
-  box-shadow: none;
+.panel td.sunday a {
+  color: var(--timesheets_sunday);
 }
 
-/* 年・月・Show を同じ高さで 1 行に並べる */
-.month-picker {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.month-picker .input,
-.month-picker .input:hover {
-  font-size: 0.9rem;
-  color: var(--timesheets_select_color);
-  background: var(--timesheets_select_background);
-  margin: 0;
-  padding: 0 0.75rem;
-  height: var(--timesheets_control_height);
-  min-width: 6rem;
-}
-
-.month-picker .btn {
-  font-size: 0.9rem;
-  margin: 0;
-  padding: 0 2rem;
-  height: var(--timesheets_control_height);
-}
-
-.month-nav {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.month-nav a {
-  font-size: 0.8rem;
-  color: var(--timesheets_link_on_page);
-  text-decoration: none;
-}
-
-.month-nav a:hover {
-  text-decoration: underline;
-}
-
-/* 狭い画面では表のみ横スクロールさせる */
-.table-scroll {
-  overflow-x: auto;
-}
-
-.panel table {
-  margin: 0;
-}
-
-.panel td a {
-  color: var(--timesheets_link_on_table);
-  text-decoration: none;
-}
-
-.panel td a:hover {
-  text-decoration: underline;
+.panel td.saturday a {
+  color: var(--timesheets_saturday);
 }

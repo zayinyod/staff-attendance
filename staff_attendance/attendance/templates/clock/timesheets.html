@@ -3,6 +3,7 @@
 {% block title %}Timesheets{% endblock %}
 {% block header %}
 <link rel="stylesheet" href="{% static 'css/workflow.css' %}">
+<link rel="stylesheet" href="{% static 'css/panel.css' %}">
 <link rel="stylesheet" href="{% static 'css/timesheets.css' %}">
 {% endblock %}
 {% block body %}
@@ -16,12 +17,12 @@
       <div class="error"><p>Invalid month. Showing the current month.</p></div>
     {% endif %}
 
-    <form method="GET" class="month-picker">
+    <form method="GET" class="period-picker">
       {% for field in form %}{{ field }}{% endfor %}
       <button class="btn" type="submit">Show</button>
     </form>
 
-    <nav class="month-nav">
+    <nav class="period-nav">
       <span>
         {% if previous_month %}
           <a href="?year={{ previous_month.year }}&amp;month={{ previous_month.month }}">&lt; Previous</a>
@@ -50,7 +51,7 @@
         <tbody>
           {% for record in daily_records %}
           <tr>
-            <td>
+            <td{% if record.date|date:"w" == "0" %} class="sunday"{% elif record.date|date:"w" == "6" %} class="saturday"{% endif %}>
               <a href="{% url 'dashboard' %}?date={{ record.date|date:'Y-m-d' }}">
                 {{ record.date|date:"m/d (D)" }}
               </a>

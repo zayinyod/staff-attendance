@@ -5,6 +5,7 @@ view モジュールの import は Django が URL 解決時にレイジーに行
 setUpTestData でコードマスターを作成してから self.client でリクエストすることで、
 ClockRepository 等のクラス定義時 DB クエリが正しいデータを参照できる。
 """
+import re
 from datetime import date
 from decimal import Decimal
 from html.parser import HTMLParser
@@ -212,6 +213,20 @@ class TestDashboardView(BaseViewTestCase):
         self.client.login(username="testuser", password="SecurePass1!")
         response = self.client.get(reverse("dashboard"), {"date": "2024-04-01"})
         self.assertEqual(response.status_code, 200)
+
+    def test_summary_table_is_rendered_inside_panel(self):
+        """集計表がカード [.panel] の内側に描画されること"""
+        self.client.login(username="testuser", password="SecurePass1!")
+        response = self.client.get(reverse("dashboard"))
+        finder = AncestorClassFinder(target_tag="table")
+        finder.feed(response.content.decode())
+        self.assertIn("panel", finder.ancestor_classes)
+
+    def test_date_input_defaults_to_target_date(self):
+        """日付選択の初期値が対象日であること"""
+        self.client.login(username="testuser", password="SecurePass1!")
+        response = self.client.get(reverse("dashboard"), {"date": "2024-04-01"})
+        self.assertContains(response, 'type="date" name="date" value="2024-04-01"')
 
 
 # ------------------------------------------------------------------ Approval
@@ -523,6 +538,19 @@ class TestTimesheetsView(BaseViewTestCase):
         finder = AncestorClassFinder(target_tag="table")
         finder.feed(response.content.decode())
         self.assertIn("panel", finder.ancestor_classes)
+
+    def test_weekend_cells_have_weekday_class(self):
+        """土曜・日曜の日付セルにのみ曜日のクラスが付与されること"""
+        response = self.client.get(reverse("timesheets"), {"year": 2024, "month": 4})
+        content = response.content.decode()
+        # 2024 年 4 月の土曜は 6, 13, 20, 27 日、日曜は 7, 14, 21, 28 日
+        self.assertEqual(self.cell_dates(content, "saturday"), [6, 13, 20, 27])
+        self.assertEqual(self.cell_dates(content, "sunday"), [7, 14, 21, 28])
+
+    @staticmethod
+    def cell_dates(content: str, weekday_class: str) -> list:
+        pattern = rf'<td class="{weekday_class}">\s*<a href="[^"]*date=2024-04-(\d{{2}})"'
+        return [int(day) for day in re.findall(pattern, content)]
 
     def test_shortcut_bindings_are_embedded(self):
         """ショートカットの割り当てがページに埋め込まれること"""
