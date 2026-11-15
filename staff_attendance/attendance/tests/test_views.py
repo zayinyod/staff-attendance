@@ -7,6 +7,7 @@ ClockRepository 等のクラス定義時 DB クエリが正しいデータを参
 """
 from datetime import date
 from decimal import Decimal
+from html.parser import HTMLParser
 from unittest.mock import patch
 from django.db import IntegrityError
 from django.test import TestCase
@@ -514,3 +515,36 @@ class TestTimesheetsView(BaseViewTestCase):
         """選択可能な範囲より前の前月は表示されないこと"""
         response = self.client.get(reverse("timesheets"), {"year": 2020, "month": 1})
         self.assertIsNone(response.context["previous_month"])
+
+    def test_table_is_rendered_inside_panel(self):
+        """表がカード [.panel] の内側に描画されること"""
+        response = self.client.get(reverse("timesheets"))
+        finder = AncestorClassFinder(target_tag="table")
+        finder.feed(response.content.decode())
+        self.assertIn("panel", finder.ancestor_classes)
+
+
+class AncestorClassFinder(HTMLParser):
+    """最初に現れた target_tag の祖先要素が持つ class を収集する"""
+
+    VOID_TAGS = {"br", "hr", "img", "input", "link", "meta"}
+
+    def __init__(self, target_tag):
+        super().__init__()
+        self.target_tag = target_tag
+        self.open_tag_classes = []
+        self.ancestor_classes = None
+
+    def handle_starttag(self, tag, attrs):
+        if self.ancestor_classes is not None or tag in self.VOID_TAGS:
+            return
+        if tag == self.target_tag:
+            self.ancestor_classes = {
+                name for classes in self.open_tag_classes for name in classes
+            }
+            return
+        self.open_tag_classes.append((dict(attrs).get("class") or "").split())
+
+    def handle_endtag(self, tag):
+        if self.ancestor_classes is None and tag not in self.VOID_TAGS and self.open_tag_classes:
+            self.open_tag_classes.pop()
