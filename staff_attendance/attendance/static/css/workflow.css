@@ -163,7 +163,6 @@ table {
   overflow: hidden;
   overflow-x: auto;
   overflow-y: auto;
-  box-shadow: 0 0 40px rgba(8,7,16,0.6);
 }
 
 th, td {
