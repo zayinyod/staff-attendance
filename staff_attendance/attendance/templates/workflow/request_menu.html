@@ -5,14 +5,14 @@
 {% block body %}
 
 <div class="main">
-  <form>
+  <div class="card">
     <h1>Request</h1>
     <p class="description">Select your request.</p>
     <p><a class="workflow" href="{% url 'paid_leave_request' %}">Paid Leave</a></p>
     <p><a class="workflow" href="#">Clock Correct</a></p>
     <p><a class="workflow" href="#">Fare</a></p>
     <p><a class="workflow" href="#">Pay Period</a></p>
-  </form>
+  </div>
 </div>
 
 {% endblock %}

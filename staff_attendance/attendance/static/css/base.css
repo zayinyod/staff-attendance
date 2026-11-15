@@ -30,7 +30,9 @@ body {
   text-align: center;
 }
 
-form {
+/* .card は送信を伴わない囲み枠。form と同じ装飾とする */
+form,
+.card {
   border: 2px solid rgba(255,255,255,0.1);
   border-radius: 10px;
   margin: var(--base_margin);
