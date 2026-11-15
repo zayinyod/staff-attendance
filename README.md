@@ -135,6 +135,9 @@ staff_attendance/
 ├── attendance/				# urls.py はこの配下に置かない
 │   ├── fixtures/
 │   │   └── departments.json		# 所属部署の初期データ
+│   ├── management/
+│   │   └── commands/
+│   │       └── runserver.py		# 静的ファイルをキャッシュさせない runserver
 │   ├── migrations/
 │   ├── models/				# モデル
 │   │   ├── __init__.py
@@ -179,8 +182,25 @@ staff_attendance/
     ├── mixins.py
     ├── now.py
     ├── round_calc.py
-    └── shortcuts.py			# ショートカットキーの割り当て
+    ├── shortcuts.py			# ショートカットキーの割り当て
+    ├── static_handlers.py		# 開発サーバーの静的ファイル配信
+    ├── storages.py			# 静的ファイルのストレージ
+    └── test_runner.py			# テストランナー
 ```
+
+### 静的ファイル
+
+ブラウザが変更前のファイルをキャッシュから読み込むことを防ぐため、環境ごとに以下の対策を取る。
+
+| 環境 | 対策 | 実装 |
+|------|------|------|
+| 開発 [DEBUG=True] | `runserver` が静的ファイルの応答に `Cache-Control: no-cache` を付与する。未変更のファイルには 304 を返す | `attendance/management/commands/runserver.py`、`util/static_handlers.py` |
+| 本番 [DEBUG=False] | ファイル名に内容のハッシュを付与して配信する。ES Modules の import 先もハッシュ付きの名前に書き換える | `util/storages.py` [ManifestStaticFilesStorage を継承] |
+
+- DEBUG=False で起動する前に `make collectstatic` を実行し、`STATIC_ROOT` にファイルとマニフェストを生成する。未収集のファイルを参照するとページの描画時に例外となる。
+- DEBUG=False では Django は静的ファイルを配信しない。本番の配信方法は未定義である。
+- テストは DEBUG=False で実行されるため、テストランナー [`util/test_runner.py`] がストレージを `StaticFilesStorage` に切り替える。
+- `runserver` を拡張しているため、`INSTALLED_APPS` では `attendance` を `django.contrib.staticfiles` より前に記載する。
 
 ### ショートカットキー
 
@@ -218,7 +238,7 @@ frontend/
 | 有給申請、承認 | 完了 |
 | 打刻修正、交通費、勤怠締め | モデルのみ。Usecase / View は未実装 |
 | 承認ルート、有給の付与・管理、給与集計 | 未着手 |
-| テスト | 106 件 |
+| テスト | 111 件 |
 
 ### フロントエンド
 
