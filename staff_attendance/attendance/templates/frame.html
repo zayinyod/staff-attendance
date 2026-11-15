@@ -29,6 +29,9 @@
   <script src="{% static 'js/time.js' %}"></script>
   <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
   <script src="{% static 'js/darkmode.js' %}"></script>
+  {{ shortcut_bindings|json_script:"shortcut-bindings" }}
+  <script type="module" src="{% static 'js/toggle.js' %}"></script>
+  <script type="module" src="{% static 'js/shortcuts/main.js' %}"></script>
   {% block script %}
   {% endblock %}
 </html>

@@ -17,6 +17,7 @@ from attendance.models import Clock, CodeMaster, Department, PaidLeave, User
 from staff_attendance.user.repositories import UserRepository
 from staff_attendance.user.usecases import UserUseCase
 from util.id_generator import IDGenerator
+from util.shortcuts import DEFAULT_SHORTCUTS
 
 
 class BaseViewTestCase(TestCase):
@@ -522,6 +523,12 @@ class TestTimesheetsView(BaseViewTestCase):
         finder = AncestorClassFinder(target_tag="table")
         finder.feed(response.content.decode())
         self.assertIn("panel", finder.ancestor_classes)
+
+    def test_shortcut_bindings_are_embedded(self):
+        """ショートカットの割り当てがページに埋め込まれること"""
+        response = self.client.get(reverse("timesheets"))
+        self.assertEqual(response.context["shortcut_bindings"], DEFAULT_SHORTCUTS)
+        self.assertContains(response, 'id="shortcut-bindings"')
 
 
 class AncestorClassFinder(HTMLParser):
