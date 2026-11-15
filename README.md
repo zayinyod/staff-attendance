@@ -64,9 +64,26 @@ make serve   # 開発サーバーを起動する（http://localhost:8000）
 | `make check` | Django の構成チェックを実行する |
 | `make migrations` | マイグレーションを作成する |
 | `make lint` | flake8 で静的検査を実行する |
+| `make db-backup` | DB を `backups/db/` に複製する（直近 10 世代を保持） |
+| `make switch BRANCH=<name>` | DB を複製してからブランチを切り替える |
+| `make createsuperuser` | 管理ユーザーを作成する（対話形式） |
+| `make db-shell` | SQLite に接続する。`SQL="..."` を指定すると 1 文だけ実行する |
 | `make shell` | コンテナのシェルを起動する |
 
 `make lint` は違反を検出すると flake8 の仕様により終了コード 1 を返す。
+
+### DB
+
+DB は `staff_attendance/data/db.sqlite3` に置く。配置先とバックアップ先は `.env` の
+`DB_PATH`・`DB_BACKUP_DIR` で変更できる。
+
+- 旧コミットは `staff_attendance/db.sqlite3` を Git で追跡している。Git は ignore 対象のファイルを
+  checkout 時に警告なく上書き・削除するため、DB はこの場所に置かない。
+- ブランチの切り替えは `make switch BRANCH=<name>` を使用する。`git switch` を直接使う場合は、
+  事前に `make db-backup` を実行する。
+- `make db-backup` はサーバーの稼働中でも実行できる。出力先の表示はコンテナ内のパスとなる。
+- コンテナに `sqlite3` コマンドがないため、`make db-shell` は Python 標準の `python -m sqlite3` で接続する。
+  `manage.py dbshell` は使用できない。
 
 ### 画面
 

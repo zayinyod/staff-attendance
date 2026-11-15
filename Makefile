@@ -27,7 +27,7 @@ DOCKER_RUN_IT = docker run --rm -it --user $(HOST_UID):$(HOST_GID) \
 .DEFAULT_GOAL := help
 
 .PHONY: help build rebuild test test-file check migrations-check migrations \
-        migrate seed loaddata lint serve shell django-shell collectstatic clean
+        migrate seed loaddata db-backup switch createsuperuser db-shell lint serve shell django-shell collectstatic clean
 
 help: ## タスク一覧を表示する
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -62,6 +62,23 @@ seed: migrate loaddata ## 新規環境の初期データを投入する [migrate
 
 loaddata: ## 所属部署のフィクスチャを読み込む
 	$(DOCKER_RUN) python manage.py loaddata departments
+
+db-backup: ## DB を backups/db/ に複製する [直近 10 世代を保持]
+	$(DOCKER_RUN) python manage.py backup_db
+
+switch: ## DB を複製してからブランチを切り替える [make switch BRANCH=develop]
+	@test -n "$(BRANCH)" || { echo "BRANCH に切り替え先を指定する [e.g. BRANCH=develop]"; exit 1; }
+	$(MAKE) --no-print-directory db-backup
+	git switch $(BRANCH)
+
+createsuperuser: ## 管理ユーザーを作成する [対話形式]
+	$(DOCKER_RUN_IT) $(IMAGE) python manage.py createsuperuser
+
+# コンテナに sqlite3 コマンドがないため manage.py dbshell ではなく Python 標準の CLI を使う
+db-shell: ## SQLite に接続する [SQL="..." を指定すると 1 文だけ実行する]
+	$(if $(SQL),$(DOCKER_RUN),$(DOCKER_RUN_IT) $(IMAGE)) bash -c 'python -m sqlite3 \
+		"$$(python manage.py shell -c "from django.conf import settings; print(settings.DB_PATH)")" \
+		$(if $(SQL),"$(SQL)")'
 
 lint: ## flake8 で静的検査を実行する
 	docker run --rm --user $(HOST_UID):$(HOST_GID) \
