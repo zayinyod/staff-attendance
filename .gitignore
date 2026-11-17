@@ -2,6 +2,8 @@
 !.claude/settings.json
 !.claude/skills/
 !.claude/rules/
+!.claude/hooks/
+!.claude/scripts/
 
 **/__pycache__/**
 *.log
