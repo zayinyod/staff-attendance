@@ -94,10 +94,16 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# 旧コミットは staff_attendance/db.sqlite3 を追跡しているため、checkout による上書きを避けて
+# data/ 配下に置く。相対パスはリポジトリのルートを起点とする
+REPOSITORY_DIR = BASE_DIR.parent
+DB_PATH = REPOSITORY_DIR / env("DB_PATH", default="staff_attendance/data/db.sqlite3")
+DB_BACKUP_DIR = REPOSITORY_DIR / env("DB_BACKUP_DIR", default="backups/db")
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": DB_PATH,
     }
 }
 

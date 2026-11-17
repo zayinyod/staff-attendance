@@ -8,6 +8,9 @@
 
 /staff_attendance/static/
 /staff_attendance/db.sqlite3
+/staff_attendance/data/*
+!/staff_attendance/data/.gitkeep
+/backups/
 
 # 環境固有の symlink
 memories
