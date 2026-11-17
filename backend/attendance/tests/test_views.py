@@ -15,8 +15,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from attendance.models import Clock, CodeMaster, Department, PaidLeave, User
-from staff_attendance.user.repositories import UserRepository
-from staff_attendance.user.usecases import UserUseCase
+from features.user.repositories import UserRepository
+from features.user.usecases import UserUseCase
 from util.id_generator import IDGenerator
 from util.shortcuts import DEFAULT_SHORTCUTS
 

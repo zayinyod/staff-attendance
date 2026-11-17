@@ -1,7 +1,7 @@
 ---
 paths:
-  - "staff_attendance/attendance/static/css/**"
-  - "staff_attendance/attendance/templates/**"
+  - "backend/attendance/static/css/**"
+  - "backend/attendance/templates/**"
 ---
 
 # 配色の変更

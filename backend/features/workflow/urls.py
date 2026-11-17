@@ -4,6 +4,6 @@ from .views import WorkflowSelectView, RequestView, ApprovalView
 urlpatterns = [
     path("", WorkflowSelectView.as_view(), name="select"),
     path("request/", RequestView.as_view(), name="request"),
-    path("request/paid_leave/", include("staff_attendance.workflow.paid_leave.urls")),
+    path("request/paid_leave/", include("features.workflow.paid_leave.urls")),
     path("approval/", ApprovalView.as_view(), name="approval"),
 ]

@@ -10,10 +10,10 @@
 .env
 .devcontainer/devcontainer-lock.json
 
-/staff_attendance/static/
-/staff_attendance/db.sqlite3
-/staff_attendance/data/*
-!/staff_attendance/data/.gitkeep
+/backend/static/
+/backend/db.sqlite3
+/backend/data/*
+!/backend/data/.gitkeep
 /backups/
 
 # 環境固有の symlink

@@ -24,7 +24,7 @@ flake8 には既存の違反が残っている。判定は件数の増減で行�
 make test 2>&1 | grep -E "^(Ran|OK|FAILED)|^(FAIL|ERROR):"
 make check
 make migrations-check
-make lint 2>&1 | grep -c "^staff_attendance"
+make lint 2>&1 | grep -c "^backend"
 ```
 
 | 項目 | 合格の条件 |

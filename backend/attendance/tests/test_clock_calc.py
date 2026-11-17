@@ -10,7 +10,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from unittest.mock import MagicMock
 
-from staff_attendance.clock.usecases.clock_calc import ClockCalculate
+from features.clock.usecases.clock_calc import ClockCalculate
 
 
 class TestClockCalculate(TestCase):

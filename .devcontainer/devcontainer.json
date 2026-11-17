@@ -10,7 +10,7 @@
         }
     },
 	"forwardPorts": [8000, 3000],
-	"postStartCommand": "cd staff_attendance && python manage.py runserver",
+	"postStartCommand": "cd backend && python manage.py runserver",
 	"postAttachCommand": "cd frontend && npm run dev",
 	"customizations": {
 		"vscode": {
