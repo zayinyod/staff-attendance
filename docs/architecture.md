@@ -36,10 +36,10 @@ graph TB
 
 | 層 | 責務 | 配置 |
 |---|---|---|
-| View | リクエストの受付、入力値の検証 [Form]、テンプレートの描画 | `staff_attendance/{domain}/views` |
-| Usecase | 業務処理。Repository を組み合わせ、Domain を生成する | `staff_attendance/{domain}/usecases` |
-| Repository | Model の検索・保存。`util.base_repository.BaseRepository` を継承する | `staff_attendance/{domain}/repositories.py` |
-| Domain | 層の間で受け渡すデータ。`dataclass` で定義する | `staff_attendance/{domain}/domains.py` |
+| View | リクエストの受付、入力値の検証 [Form]、テンプレートの描画 | `features/{domain}/views` |
+| Usecase | 業務処理。Repository を組み合わせ、Domain を生成する | `features/{domain}/usecases` |
+| Repository | Model の検索・保存。`util.base_repository.BaseRepository` を継承する | `features/{domain}/repositories.py` |
+| Domain | 層の間で受け渡すデータ。`dataclass` で定義する | `features/{domain}/domains.py` |
 | Model | テーブル定義。全ドメインのモデルを `attendance` アプリに集約する | `attendance/models/` |
 
 ## ディレクトリ構成
@@ -51,7 +51,7 @@ staff_attendance/                   # リポジトリのルート
 ├── Makefile                        # 開発タスク
 ├── docs/                           # 仕様書
 ├── frontend/                       # Next.js [導入のみ]
-└── staff_attendance/               # Django プロジェクト [BASE_DIR]
+└── backend/                        # Django プロジェクト [BASE_DIR]
     ├── manage.py
     ├── data/                       # SQLite の DB [Git 管理外。.gitkeep のみ追跡]
     ├── attendance/                 # モデル・テンプレート・静的ファイル・テストを持つアプリ
@@ -74,11 +74,12 @@ staff_attendance/                   # リポジトリのルート
     │   │   └── js/
     │   ├── templates/
     │   └── tests/
-    ├── staff_attendance/           # 設定とドメイン
+    ├── config/                     # プロジェクトの設定 [settings・ルートの urls・wsgi・asgi]
     │   ├── asgi.py
     │   ├── settings.py
     │   ├── urls.py
-    │   ├── wsgi.py
+    │   └── wsgi.py
+    ├── features/                   # ドメインごとの実装 [View・Usecase・Repository・Domain]
     │   ├── user/
     │   │   ├── views/
     │   │   ├── domains.py
@@ -113,7 +114,7 @@ staff_attendance/                   # リポジトリのルート
         └── test_runner.py
 ```
 
-- `urls.py` は `attendance/` 配下に置かず、`staff_attendance/` 配下のドメインごとに置く。
+- `urls.py` は `attendance/` 配下に置かず、`features/` 配下のドメインごとに置く。ルートの `config/urls.py` が各ドメインの `urls.py` を `include` する。
 
 ## 共通処理 [util/]
 
@@ -143,7 +144,7 @@ staff_attendance/                   # リポジトリのルート
 | `DEBUG` | `False` | デバッグモード |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1` | 許可するホスト名 |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:3000` | CORS を許可するオリジン [Next.js 用] |
-| `DB_PATH` | `staff_attendance/data/db.sqlite3` | SQLite の DB。相対パスはリポジトリのルートが起点 |
+| `DB_PATH` | `backend/data/db.sqlite3` | SQLite の DB。相対パスはリポジトリのルートが起点 |
 | `DB_BACKUP_DIR` | `backups/db` | `backup_db` の出力先。相対パスはリポジトリのルートが起点 |
 
 ### 主な設定値

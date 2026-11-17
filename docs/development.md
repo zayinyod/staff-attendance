@@ -21,9 +21,10 @@
 
 ## DB
 
-DB は `staff_attendance/data/db.sqlite3` に置く。配置先とバックアップ先は `.env` の `DB_PATH`・`DB_BACKUP_DIR` で変更できる。
+DB は `backend/data/db.sqlite3` に置く。配置先とバックアップ先は `.env` の `DB_PATH`・`DB_BACKUP_DIR` で変更できる。
 
 - 旧コミットは `staff_attendance/db.sqlite3` を Git で追跡している。Git は ignore 対象のファイルを checkout 時に警告なく上書き・削除するため、DB はこの場所に置かない。
+- Django プロジェクトのディレクトリは `staff_attendance/` から `backend/` に改名した。改名前のブランチへ切り替えると `backend/data/` の DB を参照できないため、両方のブランチで同じ DB を使う場合は `.env` の `DB_PATH` に固定のパスを指定する。
 - ブランチの切り替えは `make switch BRANCH=<name>` を使用する。`git switch` を直接使う場合は、事前に `make db-backup` を実行する。
 - `make db-backup` [`backup_db` コマンド] は SQLite のオンラインバックアップ API で複製するため、サーバーの稼働中でも実行できる。ファイル名は `db-YYYYmmdd-HHMMSS-ffffff.sqlite3` とし、直近 10 世代 [`--keep`] を超えた古い複製を削除する。出力先の表示はコンテナ内のパスとなる。
 - コンテナに `sqlite3` コマンドがないため、`make db-shell` は Python 標準の `python -m sqlite3` で接続する。`manage.py dbshell` は使用できない。
