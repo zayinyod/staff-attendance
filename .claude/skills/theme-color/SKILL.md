@@ -1,6 +1,6 @@
 ---
 name: theme-color
-description: Django テンプレートの画面で配色 [文字色・背景色・枠線・リンク色] を追加・変更する際に使用する。darkmode-js の反転方式を前提に、Light / Dark 両方の色の決定、コントラスト比の検証、反転の対象外となる指定の検出、両モードの撮影確認までの手順を規定する。staff_attendance/attendance/static/css/ 配下の CSS、またはテンプレートで色に関わるクラスを編集する場合に適用する。
+description: Django テンプレートの画面で配色 [文字色・背景色・枠線・リンク色] を追加・変更する際に使用する。darkmode-js の反転方式を前提に、Light / Dark 両方の色の決定、コントラスト比の検証、反転の対象外となる指定の検出、両モードの撮影確認までの手順を規定する。backend/attendance/static/css/ 配下の CSS、またはテンプレートで色に関わるクラスを編集する場合に適用する。
 ---
 
 # テーマカラー [Light / Dark] の調整
@@ -65,7 +65,7 @@ body.darkmode--activated {
 ### 4. 検査する
 
 ```bash
-python3 .claude/skills/theme-color/scripts/theme_color.py lint staff_attendance/attendance/static/css
+python3 .claude/skills/theme-color/scripts/theme_color.py lint backend/attendance/static/css
 ```
 
 - 今回変更した箇所が一覧に出ないことを確認する。既存分は対象外とし、修正する場合はユーザーの承認を得る。

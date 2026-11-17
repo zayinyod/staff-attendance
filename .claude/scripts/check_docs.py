@@ -29,8 +29,8 @@ ARCHITECTURE = DOCS_DIR / "architecture.md"
 FEATURES = DOCS_DIR / "features.md"
 MAKEFILE = REPOSITORY_DIR / "Makefile"
 ENV_EXAMPLE = REPOSITORY_DIR / ".env.example"
-DJANGO_DIR = REPOSITORY_DIR / "staff_attendance"
-SETTINGS = DJANGO_DIR / "staff_attendance" / "settings.py"
+DJANGO_DIR = REPOSITORY_DIR / "backend"
+SETTINGS = DJANGO_DIR / "config" / "settings.py"
 
 TREE_HEADING = "## ディレクトリ構成"
 # 一覧の網羅性を問わない .py

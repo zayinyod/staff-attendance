@@ -9,7 +9,7 @@ IMAGE       := staff-attendance-dev
 DOCKERFILE  := .devcontainer/Dockerfile
 CONTEXT     := .devcontainer
 WORKSPACE   := /workspaces/staff_attendance
-BACKEND_DIR := $(WORKSPACE)/staff_attendance
+BACKEND_DIR := $(WORKSPACE)/backend
 HOST_UID    := $(shell id -u)
 HOST_GID    := $(shell id -g)
 
@@ -84,7 +84,7 @@ lint: ## flake8 で静的検査を実行する
 	docker run --rm --user $(HOST_UID):$(HOST_GID) \
 		-v $(CURDIR):$(WORKSPACE) -w $(WORKSPACE) $(IMAGE) \
 		bash -c "pip install --quiet --disable-pip-version-check flake8 \
-			&& flake8 --config .devcontainer/.flake8 staff_attendance/"
+			&& flake8 --config .devcontainer/.flake8 backend/"
 
 serve: ## 開発サーバーを起動する [http://localhost:8000]
 	$(DOCKER_RUN_IT) -p 8000:8000 $(IMAGE) \
