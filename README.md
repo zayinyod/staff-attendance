@@ -219,6 +219,22 @@ staff_attendance/
 - テストは DEBUG=False で実行されるため、テストランナー [`util/test_runner.py`] がストレージを `StaticFilesStorage` に切り替える。
 - `runserver` を拡張しているため、`INSTALLED_APPS` では `attendance` を `django.contrib.staticfiles` より前に記載する。
 
+### テーマカラー
+
+Dark Mode は darkmode-js [`static/js/darkmode.js`] が `mix-blend-mode: difference` で画面全体を反転して表示する。
+
+| 項目 | 内容 |
+|------|------|
+| ページの背景 | Light `#e1e1d7` / Dark `#1e1e28` [反転色] |
+| 表の背景 | `th` `#27292d`、`td` `#202122`。Dark では反転して明るい背景となる |
+| 色の指定 | Light の値で指定する。Dark で見える色は指定した色の反転色となる |
+| 色相の保持 | 有彩色で色相を保つ必要がある場合は、`body.darkmode--activated` で反転後に意図した色となる値を上書きする |
+| コントラスト比 | Light / Dark の両方で、背景に対して 4.5:1 以上とする |
+
+- 色は CSS 変数で指定し、変数名は `--{ファイル名}_{役割}` とする。`base.css` の共通色は `--{役割}` とする。
+- `isolation: isolate` は要素を反転の対象外とし、Light / Dark で同じ見た目となるため使用しない。既存の `.error` 等に残る指定は、CSS の共通化の際に解消する。
+- 配色の算出・検査・撮影の手順は `.claude/skills/theme-color/` に定義する。
+
 ### ショートカットキー
 
 割り当て・アクション・キー入力の処理を分離する。
