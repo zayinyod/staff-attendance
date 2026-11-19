@@ -78,11 +78,6 @@
   text-decoration: underline;
 }
 
-/* 狭い画面では表のみ横スクロールさせる */
-.table-scroll {
-  overflow-x: auto;
-}
-
 .panel table {
   margin: 0;
 }

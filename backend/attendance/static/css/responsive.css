@@ -1,0 +1,91 @@
+/*
+ * 画面幅に応じた共通の上書き
+ * 各画面の CSS [base.css / form.css / workflow.css / panel.css] の後に読み込む [base.html / frame.html]
+ * 同名クラスの定義が複数のファイルに重複しているため、幅に関わる上書きをここに集約する。
+ * 900px は sidebar_state.js の OVERLAY_QUERY と揃える。
+ */
+
+/* 表を囲み、狭い画面では表のみ横スクロールさせる */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.table-scroll table {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------- 900px 未満 */
+
+@media (max-width: 899px) {
+  .header {
+    flex-wrap: wrap;
+    column-gap: 1rem;
+    box-sizing: border-box;
+    width: auto;
+    height: auto;
+    min-height: 10vh;
+    padding: 0.5rem 1rem;
+  }
+
+  /* 認証済みの画面では、左上の開閉ボタンと重ならないよう余白を取る */
+  html[data-sidebar] .header {
+    padding-left: 72px;
+  }
+
+  .main {
+    max-width: none;
+    padding: 2rem 16px 0;
+  }
+
+  h1 {
+    padding: 0.5rem 1rem;
+  }
+
+  form,
+  .card,
+  .panel {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+}
+
+/* ---------------------------------------------------------------- 600px 未満 */
+
+@media (max-width: 599px) {
+  .main {
+    padding: 1rem 0 0;
+  }
+
+  form,
+  .card,
+  .panel {
+    width: 100%;
+    height: auto;
+    padding: 32px 16px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    padding: 0.5rem 0;
+  }
+
+  .btn {
+    padding: 10px 32px;
+  }
+
+  /* 入力欄を横幅いっぱいに広げる [フォーム画面・ログイン] */
+  .field .input,
+  .field input,
+  .field select,
+  .field textarea,
+  .certificate .input {
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .period-picker {
+    flex-wrap: wrap;
+  }
+}
