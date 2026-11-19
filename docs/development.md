@@ -50,7 +50,7 @@ DB は `backend/data/db.sqlite3` に置く。配置先とバックアップ先�
 |---|---|
 | `test_models.py` | モデルの文字列表現、一意制約、削除時の挙動 |
 | `test_clock_calc.py` | 勤務時間・深夜勤務・残業の計算、日次・月次集計 |
-| `test_views.py` | 各画面の表示、権限、入力の検証、承認の POST、ユーザー ID の再生成、テンプレートの構造 |
+| `test_views.py` | 各画面の表示、権限、入力の検証、承認の POST、ユーザー ID の再生成、テンプレートの構造、サイドバーの描画 |
 | `test_utils.py` | `IDGenerator`、`RoundCalculate`、`Now`、ショートカットキーの割り当て |
 | `test_static_files.py` | no-cache の付与、`runserver` の差し替え、ハッシュ付きのファイル名と import の書き換え |
 | `test_backup_db.py` | `backup_db` の複製・世代削除・DB 不在時の挙動 |

@@ -1,13 +1,17 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html data-sidebar="closed">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Attendance | {% block title %}{{ page_title }}{% endblock %}</title>
+    {# 描画前にサイドバーの固定状態を復元するため、同期的に読み込む #}
+    <script src="{% static 'js/sidebar_state.js' %}"></script>
     {% block header %}
     {% endblock %}
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>🌑</text></svg>">
   </head>
 
@@ -16,22 +20,20 @@
       <p id="clock"></p>
       <p class="description">Staff Attendance | {{ user.username }}</p>
     </section>
+    {% include 'sidebar.html' %}
     <div class="container">
-      <div class="sidebar">
-        {% include 'sidebar.html' %}
-      </div>
       <div class="main-content">
         {% block body %}
         {% endblock %}
       </div>
     </div>
+    <script src="{% static 'js/time.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+    <script src="{% static 'js/darkmode.js' %}"></script>
+    {{ shortcut_bindings|json_script:"shortcut-bindings" }}
+    <script type="module" src="{% static 'js/toggle.js' %}"></script>
+    <script type="module" src="{% static 'js/shortcuts/main.js' %}"></script>
+    {% block script %}
+    {% endblock %}
   </body>
-  <script src="{% static 'js/time.js' %}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
-  <script src="{% static 'js/darkmode.js' %}"></script>
-  {{ shortcut_bindings|json_script:"shortcut-bindings" }}
-  <script type="module" src="{% static 'js/toggle.js' %}"></script>
-  <script type="module" src="{% static 'js/shortcuts/main.js' %}"></script>
-  {% block script %}
-  {% endblock %}
 </html>

@@ -559,6 +559,65 @@ class TestTimesheetsView(BaseViewTestCase):
         self.assertContains(response, 'id="shortcut-bindings"')
 
 
+# ------------------------------------------------------------------ Sidebar
+
+class TestSidebar(BaseViewTestCase):
+    """サイドバー [frame.html / sidebar.html] の描画"""
+
+    MENU_LABELS = ["Dashboard", "Clock", "Timesheets", "Workflow", "Administration", "Log out"]
+
+    def setUp(self):
+        self.client.login(username="testuser", password="SecurePass1!")
+
+    @staticmethod
+    def nav_html(response) -> str:
+        content = response.content.decode()
+        return re.search(r'<nav class="sidebar".*?</nav>', content, flags=re.S).group(0)
+
+    @staticmethod
+    def current_labels(nav_html: str) -> list:
+        pattern = r'<a class="sidebar-link"[^>]*aria-current="page"[^>]*>.*?<span>([^<]+)</span>'
+        return re.findall(pattern, nav_html, flags=re.S)
+
+    def test_toggle_and_mask_are_outside_nav(self):
+        """開閉ボタンと幕がサイドバーの外に描画されること [余白のクリックで閉じる不具合の防止]"""
+        response = self.client.get(reverse("timesheets"))
+        nav_html = self.nav_html(response)
+        self.assertContains(response, 'id="sidebar-toggle"', count=1)
+        self.assertContains(response, 'id="sidebar-mask"', count=1)
+        self.assertNotIn("sidebar-toggle", nav_html)
+        self.assertNotIn("sidebar-mask", nav_html)
+
+    def test_menu_labels_and_icons(self):
+        """各メニューが先頭のみ大文字の表記で、左端にアイコンを持つこと"""
+        nav_html = self.nav_html(self.client.get(reverse("timesheets")))
+        self.assertEqual(re.findall(r"<span>([^<]+)</span>", nav_html), self.MENU_LABELS)
+        self.assertEqual(nav_html.count('class="sidebar-icon"'), len(self.MENU_LABELS))
+
+    def test_current_page_is_marked(self):
+        """表示中のページのメニューにのみ aria-current が付与されること"""
+        cases = [("dashboard", "Dashboard"), ("clock", "Clock"), ("timesheets", "Timesheets")]
+        for url_name, label in cases:
+            with self.subTest(url_name=url_name):
+                nav_html = self.nav_html(self.client.get(reverse(url_name)))
+                self.assertEqual(self.current_labels(nav_html), [label])
+
+    def test_workflow_pages_mark_workflow(self):
+        """ワークフロー配下の画面では Workflow が現在のページとなること"""
+        self.client.login(username="admin", password="AdminPass1!")
+        for url_name in ["select", "request", "approval", "paid_leave_request"]:
+            with self.subTest(url_name=url_name):
+                nav_html = self.nav_html(self.client.get(reverse(url_name)))
+                self.assertEqual(self.current_labels(nav_html), ["Workflow"])
+
+    def test_sidebar_state_is_restored_before_render(self):
+        """固定状態の復元スクリプトが head で同期的に読み込まれること"""
+        content = self.client.get(reverse("timesheets")).content.decode()
+        head = content.split("</head>", 1)[0]
+        self.assertIn('<html data-sidebar="closed">', content)
+        self.assertRegex(head, r'<script src="[^"]*js/sidebar_state\.js"></script>')
+
+
 class AncestorClassFinder(HTMLParser):
     """最初に現れた target_tag の祖先要素が持つ class を収集する"""
 

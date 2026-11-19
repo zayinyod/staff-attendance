@@ -1,143 +1,216 @@
-.sidebar {
-  background-color: #434444;
-  border: 2px solid none;
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  top: 0;
-  left: -400px;
-  width: 350px;
-  height: 100vh;
-  transition: all 0.5s;
-  z-index: 10;
+/*
+ * サイドバー・開閉ボタン・幕
+ * 状態は html 要素の data-sidebar で切り替える [toggle.js]
+ *
+ * これらは position: fixed と z-index を持ち、darkmode-js の反転レイヤーより上に描画されるため、
+ * Dark Mode でも反転されない。Dark の値は「表示する色」をそのまま指定する。
+ */
+
+:root {
+  --sidebar_background: #132032;
+  --sidebar_text: #c3cad6;              /* 背景に対し 9.95:1 */
+  --sidebar_hover_background: #1e2b42;  /* 文字に対し 8.61:1 */
+  --sidebar_active_background: #2b3648;
+  --sidebar_active_text: #ffffff;       /* 現在のページの背景に対し 12.18:1 */
+  --sidebar_border: transparent;
+  --sidebar_shadow: rgba(8, 7, 16, 0.35);
+  --sidebar_toggle_on_page: #132032;    /* ページの背景 #e1e1d7 に対し 12.46:1 */
+  --sidebar_mask: rgba(18, 18, 18, 0.5);
+
+  --sidebar_width: 240px;
+  --sidebar_gap: 12px;
+  --sidebar_offset: calc(var(--sidebar_width) + var(--sidebar_gap) * 2);
+  --sidebar_duration: 0.2s;
 }
 
-.sidebar.open {
-  left: 0;
+/* 反転されないため、表示する色をそのまま指定する */
+body.darkmode--activated {
+  --sidebar_background: #1b2940;        /* 文字に対し 8.86:1 */
+  --sidebar_hover_background: #25344f;  /* 文字に対し 7.57:1 */
+  --sidebar_active_background: #31415f; /* 現在のページの文字に対し 10.23:1 */
+  --sidebar_border: rgba(255, 255, 255, 0.08);
+  --sidebar_shadow: rgba(0, 0, 0, 0.5);
+  --sidebar_toggle_on_page: #c3cad6;    /* ページの背景 #1e1e28 に対し 10.02:1 */
+}
+
+/* ---------------------------------------------------------------- サイドバー */
+
+.sidebar {
+  position: fixed;
+  top: var(--sidebar_gap);
+  bottom: var(--sidebar_gap);
+  left: var(--sidebar_gap);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: var(--sidebar_width);
+  max-width: calc(100vw - var(--sidebar_gap) * 2);
+  padding: 64px 12px 12px;
+  background-color: var(--sidebar_background);
+  border: 1px solid var(--sidebar_border);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px var(--sidebar_shadow);
+  transform: translateX(calc(-100% - var(--sidebar_gap) * 2));
+  visibility: hidden;
+  transition: transform var(--sidebar_duration) ease, visibility 0s linear var(--sidebar_duration);
+}
+
+html[data-sidebar="peek"] .sidebar,
+html[data-sidebar="pinned"] .sidebar,
+html[data-sidebar="open"] .sidebar {
+  transform: none;
+  visibility: visible;
+  transition: transform var(--sidebar_duration) ease;
 }
 
 .sidebar-menu {
-  font-size: 0.7em;
-  list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
-.sidebar-menu li {
-  border-bottom: 1px solid #339999;
-  transition-duration: 0.5s;
-}
-
-.sidebar-menu li:hover {
-  border-bottom: 1px solid antiquewhite;
-}
-
-.sidebar-menu li a {
-  color: #339999;
-  font-size: 1.2em;
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--sidebar_text);
+  font-size: 0.95rem;
   text-decoration: none;
-  display: block;
-  padding: 1rem;
-  transition-duration: 0.5s;
+  transition: background-color var(--sidebar_duration);
 }
 
-.sidebar-menu li a:hover {
-  color: antiquewhite;
-  background-color: #121212;
+.sidebar-link:hover,
+.sidebar-link:focus-visible {
+  background-color: var(--sidebar_hover_background);
 }
 
-.footer a {
-  color: #339999;
-  font-size: 0.9em;
-  text-decoration: none;
-  display: block;
-  padding: 1rem;
-  margin-top: 100%;
-  transition-duration: 0.5s;
+.sidebar-link[aria-current="page"] {
+  color: var(--sidebar_active_text);
+  background-color: var(--sidebar_active_background);
 }
 
-.footer a:hover {
-  color: antiquewhite;
-  background-color: #121212;
+.sidebar-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
 }
 
-.toggle-btn {
-  display: block;
+/* ログアウトを最下部に置く */
+.sidebar-footer {
+  margin-top: auto;
+}
+
+/* ---------------------------------------------------------------- 開閉ボタン */
+
+/* サイドバーの左上に重なる位置に置き、閉じている間はページ上に表示する */
+.sidebar-toggle {
   position: fixed;
-  top: 35px;
-  right: 30px;
-  width: 30px;
-  height: 30px;
-  z-index: 3;
+  top: calc(var(--sidebar_gap) + 12px);
+  left: calc(var(--sidebar_gap) + 12px);
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: var(--sidebar_toggle_on_page);
+  background-color: transparent;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 3.5s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: background-color var(--sidebar_duration);
 }
 
-.toggle-btn span {
-  background-color: #339999;
-  border-radius: 4px;
+html[data-sidebar="peek"] .sidebar-toggle,
+html[data-sidebar="pinned"] .sidebar-toggle,
+html[data-sidebar="open"] .sidebar-toggle {
+  color: var(--sidebar_text);
+}
+
+html[data-sidebar="peek"] .sidebar-toggle:hover,
+html[data-sidebar="pinned"] .sidebar-toggle:hover,
+html[data-sidebar="open"] .sidebar-toggle:hover {
+  background-color: var(--sidebar_hover_background);
+}
+
+.sidebar-toggle span {
   position: absolute;
+  left: 8px;
   display: block;
-  left: 0;
-  width: 30px;
+  width: 24px;
   height: 2px;
-  transition: all 0.5s;
+  background-color: currentColor;
+  border-radius: 2px;
+  transition: transform var(--sidebar_duration), opacity var(--sidebar_duration);
 }
 
-.toggle-btn span:nth-child(1) {
-  top: 4px;
+.sidebar-toggle span:nth-child(1) {
+  top: 12px;
 }
 
-.toggle-btn span:nth-child(2) {
-  top: 14px;
+.sidebar-toggle span:nth-child(2) {
+  top: 19px;
 }
 
-.toggle-btn span:nth-child(3) {
-  bottom: 4px;
+.sidebar-toggle span:nth-child(3) {
+  top: 26px;
 }
 
-.sidebar.open .toggle-btn span {
-  background-color: antiquewhite;
+/* 固定・オーバーレイ表示中は閉じる操作を示す形 [×] とする */
+html[data-sidebar="pinned"] .sidebar-toggle span:nth-child(1),
+html[data-sidebar="open"] .sidebar-toggle span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
 }
 
-.sidebar.open .toggle-btn span:nth-child(1) {
-  transform: translateY(10px) rotate(-315deg);
-}
-
-.sidebar.open .toggle-btn span:nth-child(2) {
+html[data-sidebar="pinned"] .sidebar-toggle span:nth-child(2),
+html[data-sidebar="open"] .sidebar-toggle span:nth-child(2) {
   opacity: 0;
 }
 
-.sidebar.open .toggle-btn span:nth-child(3) {
-  transform: translateY(-10px) rotate(315deg);
+html[data-sidebar="pinned"] .sidebar-toggle span:nth-child(3),
+html[data-sidebar="open"] .sidebar-toggle span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
-#mask {
-  display: none;
-  transition: all 0.5s;
-}
+/* ---------------------------------------------------------------- 幕 [オーバーレイ表示のみ] */
 
-.sidebar.open #mask {
-  background-color: #121212;
-  display: block;
+/* サイドバーより下の層に置き、サイドバー上のクリックを受けないようにする */
+.sidebar-mask {
   position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  opacity: 0.5;
+  inset: 0;
+  z-index: 15;
+  background-color: var(--sidebar_mask);
+  opacity: 0;
+  visibility: hidden;
   cursor: pointer;
-  z-index: -1;
+  transition: opacity var(--sidebar_duration), visibility 0s linear var(--sidebar_duration);
 }
 
-@media (max-width: 600px) {
-  .sidebar {
-    width: 100px;
+html[data-sidebar="open"] .sidebar-mask {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity var(--sidebar_duration);
+}
+
+/* ---------------------------------------------------------------- 固定時の本文 */
+
+body {
+  transition: padding-left var(--sidebar_duration) ease;
+}
+
+/* 900px は sidebar_state.js の OVERLAY_QUERY と揃える */
+@media (min-width: 900px) {
+  html[data-sidebar="pinned"] body {
+    padding-left: var(--sidebar_offset);
   }
-  .sidebar-menu li a {
-    font-size: 1em;
-  }
-  .footer a {
-    font-size: 0.7em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sidebar_duration: 0s;
   }
 }
