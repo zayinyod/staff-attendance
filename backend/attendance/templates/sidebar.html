@@ -1,29 +1,48 @@
-{% load static %}
-<link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+{# 開閉ボタンと幕はサイドバーの外に置く。幕がサイドバーの余白でクリックを受けないようにするため #}
+<button type="button" class="sidebar-toggle" id="sidebar-toggle"
+        aria-controls="sidebar" aria-expanded="false" aria-label="Toggle menu">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
 
-<nav class="sidebar">
+{% with current=request.resolver_match.url_name %}
+<nav class="sidebar" id="sidebar" aria-label="Main menu">
   <ul class="sidebar-menu">
-    <li><a href="{% url 'dashboard' %}">DASHBOARD</a></li>
-    <li><a href="{% url 'clock' %}">CLOCK</a></li>
-    <li><a href="{% url 'timesheets' %}">TIMESHEETS</a></li>
     <li>
-      {% if request.user.is_superuser %}
-        <a href="{% url 'select' %}">WORKFLOW</a>
-      {% else %}
-        <a href="{% url 'request' %}">WORKFLOW</a>
-      {% endif %}
+      <a class="sidebar-link" href="{% url 'dashboard' %}"{% if current == 'dashboard' %} aria-current="page"{% endif %}>
+        {% include 'icons/activity.html' %}<span>Dashboard</span>
+      </a>
     </li>
-    <li><a href="#">ADMINISTRATION</a></li>
+    <li>
+      <a class="sidebar-link" href="{% url 'clock' %}"{% if current == 'clock' %} aria-current="page"{% endif %}>
+        {% include 'icons/clock.html' %}<span>Clock</span>
+      </a>
+    </li>
+    <li>
+      <a class="sidebar-link" href="{% url 'timesheets' %}"{% if current == 'timesheets' %} aria-current="page"{% endif %}>
+        {% include 'icons/file_text.html' %}<span>Timesheets</span>
+      </a>
+    </li>
+    <li>
+      <a class="sidebar-link"
+         href="{% if request.user.is_superuser %}{% url 'select' %}{% else %}{% url 'request' %}{% endif %}"
+         {% if current == 'select' or current == 'request' or current == 'approval' or current == 'paid_leave_request' %}aria-current="page"{% endif %}>
+        {% include 'icons/workflow.html' %}<span>Workflow</span>
+      </a>
+    </li>
+    <li>
+      <a class="sidebar-link" href="#">
+        {% include 'icons/users.html' %}<span>Administration</span>
+      </a>
+    </li>
   </ul>
-  <div class="footer">
-    <a href="{% url 'logout' %}">LOG OUT</a>
+  <div class="sidebar-footer">
+    <a class="sidebar-link" href="{% url 'logout' %}">
+      {% include 'icons/log_out.html' %}<span>Log out</span>
+    </a>
   </div>
-  
-  <div class="toggle-btn">
-    <span></span>
-    <span></span>
-    <span></span>  
-  </div>
-
-  <div id="mask"></div>
 </nav>
+{% endwith %}
+
+<div class="sidebar-mask" id="sidebar-mask"></div>
