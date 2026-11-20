@@ -58,7 +58,7 @@ DB は `backend/data/db.sqlite3` に置く。配置先とバックアップ先�
 | `test_backup_db.py` | `backup_db` の複製・世代削除・DB 不在時の挙動 |
 
 - テストは DEBUG=False で実行されるため、テストランナー [`util/test_runner.py`] がストレージを `StaticFilesStorage` に切り替える。
-- `make lint` の違反は既存分が残っている。変更の前後で件数が増えていないことを確認する。
+- `make lint` の違反は 0 件とする [PEP8 に準拠。1 行の最大長は 120 文字]。Django が自動生成する `migrations/` は対象外とする [`.devcontainer/.flake8`]
 
 ## Claude Code の設定 [.claude/]
 
