@@ -4,7 +4,9 @@
 
 `.devcontainer/Dockerfile` からビルドしたイメージ [`staff-attendance-dev`] で、ホストから Django を実行する。リポジトリをコンテナの `/workspaces/staff_attendance` にマウントし、ホストのユーザー ID で実行する。
 
+- ベースイメージは `mcr.microsoft.com/devcontainers/python:3-3.12-trixie` [Python 3.12、Debian 13、SQLite 3.46] とする。先頭の `3-` はイメージのメジャーバージョンを固定する。
 - 依存パッケージのバージョンは `.devcontainer/requirements.txt` で固定する。
+- `Dockerfile`・`requirements.txt` を変更した場合は `make build` でイメージを作り直す。
 - devcontainer の features [Node] は Makefile の実行では適用されない。
 
 ## make タスク
