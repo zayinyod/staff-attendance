@@ -6,6 +6,7 @@ from django.views import View
 from ..forms import MonthSelectForm
 from ..usecases import ClockCalculate
 
+
 class TimesheetsView(CustomLoginRequiredMixin, View):
     """
     月単位の勤怠一覧を表示する

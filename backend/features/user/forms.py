@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from .usecases import UserUseCase
 
+
 class UserEntryForm(UserCreationForm):
     user_usecase = UserUseCase()
 

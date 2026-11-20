@@ -3,6 +3,7 @@ from django.db import IntegrityError, transaction
 from .domains import UserDomain
 from .repositories import UserRepository, DepartmentRepository
 
+
 class UserUseCase:
     user_repository = UserRepository()
     department_repository = DepartmentRepository()

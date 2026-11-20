@@ -1,6 +1,7 @@
 from django import forms
 from attendance.models import PaidLeave
 
+
 class PaidLeaveRequestForm(forms.ModelForm):
     class Meta:
         model = PaidLeave

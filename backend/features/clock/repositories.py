@@ -4,6 +4,7 @@ from util.now import Now
 from attendance.models import Clock
 from .domains import ClockDomain
 
+
 class ClockRepository(BaseRepository):
     model = Clock
 

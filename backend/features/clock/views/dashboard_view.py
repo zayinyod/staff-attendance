@@ -5,6 +5,7 @@ from django.utils.dateparse import parse_date
 from django.views import View
 from ..usecases import ClockCalculate
 
+
 class DashboardView(CustomLoginRequiredMixin, View):
     template_name = "clock/dashboard.html"
 

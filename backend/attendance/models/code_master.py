@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class CodeMaster(models.Model):
     code_type = models.CharField(max_length=50)
     code = models.CharField(max_length=20)

@@ -1,6 +1,7 @@
 from django import forms
 from django.utils import timezone
 
+
 class MonthSelectForm(forms.Form):
     """
     集計対象の年月を選択するフォーム
