@@ -1,2 +1,4 @@
 [flake8]
 max-line-length = 120
+# Django が自動生成するため対象外とする [ディレクトリ名で照合する]
+exclude = migrations
