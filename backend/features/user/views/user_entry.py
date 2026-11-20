@@ -4,6 +4,7 @@ from django.views.generic.edit import CreateView
 from ..forms import UserEntryForm
 from ..usecases import UserUseCase
 
+
 class UserEntry(CreateView):
     form_class = UserEntryForm
     template_name = "user/user_entry.html"

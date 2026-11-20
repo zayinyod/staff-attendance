@@ -2,6 +2,7 @@ from util.base_form_view import BaseFormView
 from ..forms import ClockForm
 from ..usecases import ClockEntry
 
+
 class ClockView(BaseFormView):
     template_name = "clock/clock.html"
     form_class = ClockForm

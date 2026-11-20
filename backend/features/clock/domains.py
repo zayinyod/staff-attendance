@@ -3,6 +3,7 @@ from datetime import date, time
 from decimal import Decimal
 from attendance.models import CodeMaster
 
+
 @dataclass
 class ClockDomain:
     user: str = None

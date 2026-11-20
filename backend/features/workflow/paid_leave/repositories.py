@@ -3,6 +3,7 @@ from util.code_master_repository import CodeMasterRepository
 from attendance.models import PaidLeave
 from .domains import PaidLeaveDomain
 
+
 class PaidLeaveRepository(BaseRepository):
     model = PaidLeave
 

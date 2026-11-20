@@ -4,6 +4,7 @@ from attendance.models import Clock
 from decimal import Decimal
 from ..usecases import ClockEntry
 
+
 class ClockForm(ModelForm):
     class Meta:
         STEP_NUMBER = "0.25"

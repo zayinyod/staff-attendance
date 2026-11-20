@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class UserDomain:
     user_id: str = None

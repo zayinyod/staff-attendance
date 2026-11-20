@@ -4,11 +4,14 @@ from django.db import transaction
 from django.shortcuts import redirect
 from .paid_leave.usecases import PaidLeaveEntry
 
+
 class WorkflowSelectView(BaseSuperUserView):
     template = "workflow/select_menu.html"
 
+
 class RequestView(BaseUserView):
     template = "workflow/request_menu.html"
+
 
 class ApprovalView(BaseSuperUserView):
     template = "workflow/approval.html"

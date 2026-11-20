@@ -1,6 +1,7 @@
 from .domains import PaidLeaveDomain
 from .repositories import PaidLeaveRepository
 
+
 class PaidLeaveEntry:
     paid_leave_repository = PaidLeaveRepository()
 

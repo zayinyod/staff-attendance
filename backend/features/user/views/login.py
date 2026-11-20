@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.views import View
 
+
 class Login(View):
     template_name = "user/login.html"
     redirect_url = "dashboard"

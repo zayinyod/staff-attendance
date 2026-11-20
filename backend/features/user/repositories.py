@@ -2,6 +2,7 @@ from attendance.models import User, Department
 from util.base_repository import BaseRepository
 from .domains import UserDomain
 
+
 class UserRepository(BaseRepository):
     model = User
 
@@ -21,6 +22,7 @@ class UserRepository(BaseRepository):
     @classmethod
     def user_id_exists(cls, user_id):
         return cls.filter(user_id=user_id).exists()
+
 
 class DepartmentRepository(BaseRepository):
     model = Department

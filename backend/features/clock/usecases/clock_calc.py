@@ -4,6 +4,7 @@ from util.now import Now
 from util.round_calc import RoundCalculate
 from ..repositories import ClockRepository
 
+
 class ClockCalculate:
     clock_repository = ClockRepository()
     round_calc = RoundCalculate()

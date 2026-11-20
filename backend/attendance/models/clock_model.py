@@ -4,6 +4,7 @@ from decimal import Decimal
 from util.now import Now
 from .code_master import CodeMaster
 
+
 class Clock(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

@@ -1,6 +1,7 @@
 from ..domains import ClockDomain
 from ..repositories import ClockRepository
 
+
 class ClockEntry:
     clock_repository = ClockRepository()
 
