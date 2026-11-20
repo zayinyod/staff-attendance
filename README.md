@@ -6,14 +6,13 @@
 
 | 区分 | 構成 |
 |------|------|
-| Environment | Docker / devcontainer（Python 3.12） |
-| Back-end | Python + Django 5.1 |
+| Environment | Docker / devcontainer（Python 3.12、Debian 13） |
+| Back-end | Python + Django 5.2 LTS |
 | Front-end | Next.js 16 + React 19 + Tailwind CSS 4 |
 | Database | SQLite |
 
-依存パッケージのバージョンは `.devcontainer/requirements.txt` で固定する。Django 6.0 以降は
-SQLite 3.37 以上を要求するが、ベースイメージ（bullseye）の SQLite は 3.34 であるため、
-5.1 系を使用する。
+依存パッケージのバージョンは `.devcontainer/requirements.txt` で固定する。Django は LTS の
+5.2 系を使用し、次の LTS である 6.2 の公開後に更新する。
 
 ## フロントエンドの方針
 
