@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, time
-from decimal import Decimal
+from datetime import date
 from attendance.models import CodeMaster
 
 

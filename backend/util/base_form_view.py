@@ -32,7 +32,7 @@ class BaseFormView(CustomLoginRequiredMixin, View):
                 with transaction.atomic():
                     self.form_valid(form)
                 return redirect(self.success_url)
-            except IntegrityError as e:
+            except IntegrityError:
                 form.add_error(None, "This record already exists.")
 
         return render(
