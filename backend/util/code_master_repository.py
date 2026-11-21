@@ -29,3 +29,18 @@ class CodeMasterRepository(BaseRepository):
         }
 
         return workflow_code
+
+    @classmethod
+    def workflow_type_code_master(cls) -> dict:
+        paid_leave = cls.get(code_type="workflow_type", code="0")
+        clock_correct = cls.get(code_type="workflow_type", code="1")
+        fare = cls.get(code_type="workflow_type", code="2")
+        pay_period = cls.get(code_type="workflow_type", code="3")
+        workflow_type_code = {
+            "paid_leave": paid_leave,
+            "clock_correct": clock_correct,
+            "fare": fare,
+            "pay_period": pay_period,
+        }
+
+        return workflow_type_code

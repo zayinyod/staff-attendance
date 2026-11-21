@@ -42,6 +42,8 @@ graph TB
 | Domain | 層の間で受け渡すデータ。`dataclass` で定義する | `features/{domain}/domains.py` |
 | Model | テーブル定義。全ドメインのモデルを `attendance` アプリに集約する | `attendance/models/` |
 
+`features/workflow/` は、種別を問わない処理 [承認、`Workflow` の作成・更新] を直下に、種別ごとの処理を `paid_leave/` 等のサブパッケージに置く。依存は「種別 → 共通」の一方向とする。
+
 ## ディレクトリ構成
 
 ```
@@ -96,7 +98,10 @@ staff_attendance/                   # リポジトリのルート
     │   │   └── urls.py
     │   └── workflow/
     │       ├── paid_leave/
+    │       ├── domains.py
+    │       ├── repositories.py
     │       ├── urls.py
+    │       ├── usecases.py
     │       └── views.py
     └── util/                       # ドメインに依存しない共通処理
         ├── base_form_view.py

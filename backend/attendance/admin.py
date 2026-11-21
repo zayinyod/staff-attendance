@@ -4,6 +4,7 @@ from .models import (
     Department,
     User,
     Clock,
+    Workflow,
     PaidLeave,
     ClockCorrect,
     Fare,
@@ -29,6 +30,12 @@ admin.site.register(User)
 @admin.register(Clock)
 class ClockAdmin(admin.ModelAdmin):
     list_filter = ["user", "date_stamp", "clock", "location"]
+
+
+@admin.register(Workflow)
+class WorkflowAdmin(admin.ModelAdmin):
+    list_display = ["id", "workflow_type", "user", "status", "approver", "created_at"]
+    list_filter = ["workflow_type", "status"]
 
 
 admin.site.register(PaidLeave)

@@ -2,7 +2,7 @@ from util.base_superuser_view import BaseSuperUserView
 from util.base_user_view import BaseUserView
 from django.db import transaction
 from django.shortcuts import redirect
-from .paid_leave.usecases import PaidLeaveEntry
+from .usecases import WorkflowApproval
 
 
 class WorkflowSelectView(BaseSuperUserView):
@@ -20,7 +20,7 @@ class ApprovalView(BaseSuperUserView):
     approvable_codes = ("1", "2")
 
     def get_context_data(self, request):
-        return {"pending_list": PaidLeaveEntry.pending()}
+        return {"pending_list": WorkflowApproval.pending()}
 
     def post(self, request):
         with transaction.atomic():
@@ -29,7 +29,7 @@ class ApprovalView(BaseSuperUserView):
                 if request_id is None or value not in self.approvable_codes:
                     continue
 
-                PaidLeaveEntry.approve(request_id, value, request.user)
+                WorkflowApproval.approve(request_id, value, request.user)
 
         return redirect("approval")
 
