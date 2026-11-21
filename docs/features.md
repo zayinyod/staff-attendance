@@ -86,8 +86,8 @@
 
 ### 承認 [`/workflow/approval/`]
 
-- ステータスが「Pending」の有給申請を一覧で表示する。
-- 申請ごとに Pending / Approved / Rejected を選択して送信する。POST のキーは `status_{申請 ID}` とする。
+- ステータスが「Pending」のワークフローを一覧で表示する [現在の対象は有給申請のみ]。
+- 申請ごとに Pending / Approved / Rejected を選択して送信する。POST のキーは `status_{ワークフロー ID}` とする。
 - Approved [`1`] / Rejected [`2`] のみを反映し、承認者に操作したユーザーを記録する。Pending のまま、数値でない ID、存在しない ID、無関係なキーは無視する。
 - 全件を 1 つのトランザクションで更新し、`approval` へリダイレクトする。
 
