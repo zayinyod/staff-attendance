@@ -1,13 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
-from attendance.models import CodeMaster
-
-
-@dataclass
-class BaseDomain:
-    user: str = None
-    status: CodeMaster = None
-    approver: str = None
+from ..domains import BaseDomain
 
 
 @dataclass

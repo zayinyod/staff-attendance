@@ -8,41 +8,53 @@ from datetime import date
 from unittest.mock import patch
 from django.db.models import ProtectedError
 from django.urls import reverse
-from attendance.models import CodeMaster, PaidLeave, User
+from attendance.models import CodeMaster, PaidLeave, User, Workflow
 from attendance.tests.test_views import BaseViewTestCase
 from features.workflow.paid_leave.usecases import PaidLeaveEntry
+from features.workflow.usecases import WorkflowApproval
 
 
 PENDING = "0"
 APPROVED = "1"
 REJECTED = "2"
+PAID_LEAVE_TYPE = "0"
 
 
 def workflow_status(code: str) -> CodeMaster:
     return CodeMaster.objects.get(code_type="workflow_status", code=code)
 
 
+def workflow_type(code: str) -> CodeMaster:
+    return CodeMaster.objects.get(code_type="workflow_type", code=code)
+
+
 def create_paid_leave(user, status_code=PENDING, start_date=date(2024, 6, 1),
-                      end_date=date(2024, 6, 2), reason="test", approver=None) -> PaidLeave:
+                      end_date=date(2024, 6, 2), reason="test", approver=None) -> Workflow:
     """申請を作成する。戻り値の id は承認画面の POST キーに使う ID である"""
-    return PaidLeave.objects.create(
+    workflow = Workflow.objects.create(
+        workflow_type=workflow_type(PAID_LEAVE_TYPE),
         user=user,
         status=workflow_status(status_code),
         approver=approver,
+    )
+    PaidLeave.objects.create(
+        workflow=workflow,
         start_date=start_date,
         end_date=end_date,
         reason=reason,
     )
+    return workflow
 
 
 def find_paid_leaves(user):
-    return PaidLeave.objects.filter(user=user)
+    return PaidLeave.objects.filter(workflow__user=user)
 
 
-def status_and_approver(paid_leave) -> tuple:
-    """DB の最新のステータスと承認者を返す"""
-    paid_leave.refresh_from_db()
-    return paid_leave.status, paid_leave.approver
+def status_and_approver(record) -> tuple:
+    """DB の最新のステータスと承認者を返す。record は Workflow または PaidLeave とする"""
+    workflow = record.workflow if isinstance(record, PaidLeave) else record
+    workflow.refresh_from_db()
+    return workflow.status, workflow.approver
 
 
 class WorkflowTestCase(BaseViewTestCase):
@@ -273,7 +285,7 @@ class TestApprovalPost(WorkflowTestCase):
     def test_post_rolls_back_when_processing_fails(self):
         """途中で例外が発生した場合、先に処理した申請の変更も取り消されること"""
         other = create_paid_leave(self.user)
-        original_approve = PaidLeaveEntry.approve
+        original_approve = WorkflowApproval.approve
         call_count = {"value": 0}
 
         def approve_then_fail(request_id, status_code, approver):
@@ -283,7 +295,7 @@ class TestApprovalPost(WorkflowTestCase):
             return original_approve(request_id, status_code, approver)
 
         self.login_as_admin()
-        with patch.object(PaidLeaveEntry, "approve", side_effect=approve_then_fail):
+        with patch.object(WorkflowApproval, "approve", side_effect=approve_then_fail):
             with self.assertRaises(RuntimeError):
                 self.client.post(reverse("approval"), {
                     f"status_{self.paid_leave.id}": APPROVED,
@@ -298,7 +310,7 @@ class TestApprovalPost(WorkflowTestCase):
 # ------------------------------------------------------------------ Usecase
 
 class TestPaidLeaveEntry(WorkflowTestCase):
-    """PaidLeaveEntry の申請・承認処理"""
+    """PaidLeaveEntry の申請処理"""
 
     def test_create_request_creates_pending_request(self):
         """ステータス Pending、承認者なしで作成されること"""
@@ -311,6 +323,10 @@ class TestPaidLeaveEntry(WorkflowTestCase):
         paid_leave = find_paid_leaves(self.user).get()
         self.assertEqual(status_and_approver(paid_leave), (workflow_status(PENDING), None))
 
+
+class TestWorkflowApproval(WorkflowTestCase):
+    """WorkflowApproval の承認処理"""
+
     def test_approve_rejects_invalid_code(self):
         """承認・却下以外のコードでは ValueError を送出し、何も変更しないこと"""
         paid_leave = create_paid_leave(self.user)
@@ -318,13 +334,13 @@ class TestPaidLeaveEntry(WorkflowTestCase):
         for code in [PENDING, "3"]:
             with self.subTest(code=code):
                 with self.assertRaises(ValueError):
-                    PaidLeaveEntry.approve(paid_leave.id, code, self.admin)
+                    WorkflowApproval.approve(paid_leave.id, code, self.admin)
 
         self.assertEqual(status_and_approver(paid_leave), (workflow_status(PENDING), None))
 
     def test_approve_unknown_id_returns_false(self):
         """存在しない ID では False を返すこと"""
-        self.assertFalse(PaidLeaveEntry.approve(999999, APPROVED, self.admin))
+        self.assertFalse(WorkflowApproval.approve(999999, APPROVED, self.admin))
 
     def test_pending_returns_only_pending_requests(self):
         """Pending の申請のみを返すこと"""
@@ -332,7 +348,7 @@ class TestPaidLeaveEntry(WorkflowTestCase):
         create_paid_leave(self.user, APPROVED, approver=self.admin)
         create_paid_leave(self.user, REJECTED, approver=self.admin)
 
-        self.assertEqual([data.id for data in PaidLeaveEntry.pending()], [pending.id])
+        self.assertEqual([data.id for data in WorkflowApproval.pending()], [pending.id])
 
 
 # ------------------------------------------------------------------ Model
@@ -343,7 +359,7 @@ class TestPaidLeaveModel(WorkflowTestCase):
     def test_str(self):
         """[申請者] 開始日 - 終了日 の形式であること"""
         paid_leave = create_paid_leave(self.user)
-        self.assertEqual(str(paid_leave), "[testuser] 2024-06-01 - 2024-06-02")
+        self.assertEqual(str(paid_leave.paidleave), "[testuser] 2024-06-01 - 2024-06-02")
 
     def test_deleting_applicant_deletes_request(self):
         """申請者を削除すると申請も削除されること"""
@@ -351,7 +367,8 @@ class TestPaidLeaveModel(WorkflowTestCase):
         create_paid_leave(applicant)
 
         applicant.delete()
-        self.assertFalse(PaidLeave.objects.filter(user_id="U00002").exists())
+        self.assertFalse(Workflow.objects.filter(user_id="U00002").exists())
+        self.assertFalse(PaidLeave.objects.filter(workflow__user_id="U00002").exists())
 
     def test_deleting_approver_keeps_request(self):
         """承認者を削除しても申請は残り、承認者が空になること"""
