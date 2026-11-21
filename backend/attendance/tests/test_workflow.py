@@ -1,24 +1,144 @@
 """
 ワークフロー [有給の申請・承認] のテスト。
+
+申請データの作成と、ステータス・承認者の取得はヘルパー関数に集約する。
+テーブル構成を変更する際は、ヘルパー関数のみを修正すればよいようにするため。
 """
 from datetime import date
+from unittest.mock import patch
+from django.db.models import ProtectedError
 from django.urls import reverse
-from attendance.models import CodeMaster, PaidLeave
+from attendance.models import CodeMaster, PaidLeave, User
 from attendance.tests.test_views import BaseViewTestCase
+from features.workflow.paid_leave.usecases import PaidLeaveEntry
 
 
-# ------------------------------------------------------------------ Approval
+PENDING = "0"
+APPROVED = "1"
+REJECTED = "2"
 
-class TestApprovalView(BaseViewTestCase):
+
+def workflow_status(code: str) -> CodeMaster:
+    return CodeMaster.objects.get(code_type="workflow_status", code=code)
+
+
+def create_paid_leave(user, status_code=PENDING, start_date=date(2024, 6, 1),
+                      end_date=date(2024, 6, 2), reason="test", approver=None) -> PaidLeave:
+    """申請を作成する。戻り値の id は承認画面の POST キーに使う ID である"""
+    return PaidLeave.objects.create(
+        user=user,
+        status=workflow_status(status_code),
+        approver=approver,
+        start_date=start_date,
+        end_date=end_date,
+        reason=reason,
+    )
+
+
+def find_paid_leaves(user):
+    return PaidLeave.objects.filter(user=user)
+
+
+def status_and_approver(paid_leave) -> tuple:
+    """DB の最新のステータスと承認者を返す"""
+    paid_leave.refresh_from_db()
+    return paid_leave.status, paid_leave.approver
+
+
+class WorkflowTestCase(BaseViewTestCase):
+    def login_as_user(self):
+        self.client.login(username="testuser", password="SecurePass1!")
+
+    def login_as_admin(self):
+        self.client.login(username="admin", password="AdminPass1!")
+
+
+# ------------------------------------------------------------------ 申請
+
+class TestPaidLeaveRequestView(WorkflowTestCase):
+    """PaidLeaveRequestView の申請処理"""
+
+    url_name = "paid_leave_request"
+
+    def valid_payload(self, **overrides) -> dict:
+        payload = {"start_date": "2024-07-01", "end_date": "2024-07-03", "reason": "vacation"}
+        payload.update(overrides)
+        return payload
+
+    def test_get_redirects_if_not_logged_in(self):
+        """未認証ユーザーはログイン画面にリダイレクトされること"""
+        response = self.client.get(reverse(self.url_name))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response.url)
+
+    def test_get_shows_form(self):
+        """申請フォームが表示されること"""
+        self.login_as_user()
+        response = self.client.get(reverse(self.url_name))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "workflow/paid_leave/request.html")
+        for field in ["start_date", "end_date", "reason"]:
+            self.assertContains(response, f'name="{field}"')
+
+    def test_post_creates_pending_request(self):
+        """申請者はログイン中のユーザー、ステータスは Pending、承認者は空で作成されること"""
+        self.login_as_user()
+        response = self.client.post(reverse(self.url_name), self.valid_payload())
+        self.assertRedirects(response, reverse(self.url_name))
+
+        paid_leaves = find_paid_leaves(self.user)
+        self.assertEqual(paid_leaves.count(), 1)
+        paid_leave = paid_leaves.get()
+        self.assertEqual(paid_leave.start_date, date(2024, 7, 1))
+        self.assertEqual(paid_leave.end_date, date(2024, 7, 3))
+        self.assertEqual(paid_leave.reason, "vacation")
+        self.assertEqual(status_and_approver(paid_leave), (workflow_status(PENDING), None))
+
+    def test_post_without_reason_creates_request(self):
+        """理由が空でも申請でき、空文字として保存されること"""
+        self.login_as_user()
+        response = self.client.post(reverse(self.url_name), self.valid_payload(reason=""))
+        self.assertRedirects(response, reverse(self.url_name))
+        self.assertEqual(find_paid_leaves(self.user).get().reason, "")
+
+    def test_post_invalid_date_shows_error(self):
+        """存在しない日付はエラーとなり、申請は作成されないこと"""
+        self.login_as_user()
+        response = self.client.post(reverse(self.url_name), self.valid_payload(start_date="2024-13-45"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors["start_date"])
+        self.assertFalse(find_paid_leaves(self.user).exists())
+
+    def test_post_missing_required_field_shows_error(self):
+        """必須項目が欠けている場合はエラーとなり、申請は作成されないこと"""
+        self.login_as_user()
+        payload = self.valid_payload()
+        del payload["end_date"]
+        response = self.client.post(reverse(self.url_name), payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors["end_date"])
+        self.assertFalse(find_paid_leaves(self.user).exists())
+
+    def test_post_by_superuser_creates_request(self):
+        """スーパーユーザーも申請できること"""
+        self.login_as_admin()
+        response = self.client.post(reverse(self.url_name), self.valid_payload())
+        self.assertRedirects(response, reverse(self.url_name))
+        self.assertEqual(find_paid_leaves(self.admin).count(), 1)
+
+
+# ------------------------------------------------------------------ 承認画面の表示
+
+class TestApprovalView(WorkflowTestCase):
     def test_get_returns_403_for_general_user(self):
         """一般ユーザーは承認画面にアクセスできないこと"""
-        self.client.login(username="testuser", password="SecurePass1!")
+        self.login_as_user()
         response = self.client.get(reverse("approval"))
         self.assertEqual(response.status_code, 403)
 
     def test_get_shows_approval_page_for_superuser(self):
         """スーパーユーザーは承認画面を閲覧できること"""
-        self.client.login(username="admin", password="AdminPass1!")
+        self.login_as_admin()
         response = self.client.get(reverse("approval"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "workflow/approval.html")
@@ -28,27 +148,47 @@ class TestApprovalView(BaseViewTestCase):
         response = self.client.get(reverse("approval"))
         self.assertEqual(response.status_code, 302)
 
+    def test_get_lists_only_pending_requests(self):
+        """Pending の申請のみ一覧に含まれ、Approved・Rejected は含まれないこと"""
+        pending = create_paid_leave(self.user, PENDING)
+        create_paid_leave(self.user, APPROVED, approver=self.admin)
+        create_paid_leave(self.user, REJECTED, approver=self.admin)
+
+        self.login_as_admin()
+        response = self.client.get(reverse("approval"))
+        listed_ids = [data.id for data in response.context["pending_list"]]
+        self.assertEqual(listed_ids, [pending.id])
+
+    def test_get_shows_requests_of_any_user(self):
+        """申請者を問わず一覧に含まれ、申請者名・期間・理由が表示されること"""
+        create_paid_leave(self.user, start_date=date(2024, 8, 5), end_date=date(2024, 8, 7), reason="trip")
+        create_paid_leave(self.admin, reason="own request")
+
+        self.login_as_admin()
+        response = self.client.get(reverse("approval"))
+        self.assertEqual(len(response.context["pending_list"]), 2)
+        for text in ["testuser", "2024/08/05", "2024/08/07", "trip", "own request"]:
+            self.assertContains(response, text)
+
+    def test_get_without_requests_shows_empty_list(self):
+        """申請がない場合も表示できること"""
+        self.login_as_admin()
+        response = self.client.get(reverse("approval"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["pending_list"]), 0)
+
 
 # ------------------------------------------------------------------ 承認処理
 
-class TestApprovalPost(BaseViewTestCase):
+class TestApprovalPost(WorkflowTestCase):
     """ApprovalView の POST 処理"""
 
     def setUp(self):
-        self.pending = CodeMaster.objects.get(code_type="workflow_status", code="0")
-        self.approved = CodeMaster.objects.get(code_type="workflow_status", code="1")
-        self.rejected = CodeMaster.objects.get(code_type="workflow_status", code="2")
-        self.paid_leave = PaidLeave.objects.create(
-            user=self.user,
-            status=self.pending,
-            start_date=date(2024, 6, 1),
-            end_date=date(2024, 6, 2),
-            reason="test",
-        )
+        self.paid_leave = create_paid_leave(self.user)
 
     def test_post_returns_403_for_general_user(self):
         """一般ユーザーの POST は 403 になること"""
-        self.client.login(username="testuser", password="SecurePass1!")
+        self.login_as_user()
         response = self.client.post(reverse("approval"), {})
         self.assertEqual(response.status_code, 403)
 
@@ -59,53 +199,170 @@ class TestApprovalPost(BaseViewTestCase):
 
     def test_post_approves_request(self):
         """承認するとステータスと承認者が更新されること"""
-        self.client.login(username="admin", password="AdminPass1!")
+        self.login_as_admin()
         response = self.client.post(reverse("approval"), {
-            f"status_{self.paid_leave.id}": "1",
+            f"status_{self.paid_leave.id}": APPROVED,
         })
         self.assertRedirects(response, reverse("approval"))
-
-        self.paid_leave.refresh_from_db()
-        self.assertEqual(self.paid_leave.status, self.approved)
-        self.assertEqual(self.paid_leave.approver, self.admin)
+        self.assertEqual(
+            status_and_approver(self.paid_leave), (workflow_status(APPROVED), self.admin)
+        )
 
     def test_post_rejects_request(self):
         """却下するとステータスが更新されること"""
-        self.client.login(username="admin", password="AdminPass1!")
-        self.client.post(reverse("approval"), {f"status_{self.paid_leave.id}": "2"})
+        self.login_as_admin()
+        self.client.post(reverse("approval"), {f"status_{self.paid_leave.id}": REJECTED})
 
-        self.paid_leave.refresh_from_db()
-        self.assertEqual(self.paid_leave.status, self.rejected)
+        status, _ = status_and_approver(self.paid_leave)
+        self.assertEqual(status, workflow_status(REJECTED))
 
     def test_post_ignores_pending_value(self):
         """Pending のままの項目は更新されないこと"""
-        self.client.login(username="admin", password="AdminPass1!")
-        self.client.post(reverse("approval"), {f"status_{self.paid_leave.id}": "0"})
+        self.login_as_admin()
+        self.client.post(reverse("approval"), {f"status_{self.paid_leave.id}": PENDING})
 
-        self.paid_leave.refresh_from_db()
-        self.assertEqual(self.paid_leave.status, self.pending)
-        self.assertIsNone(self.paid_leave.approver)
+        self.assertEqual(status_and_approver(self.paid_leave), (workflow_status(PENDING), None))
 
     def test_post_ignores_non_numeric_id(self):
         """数値でない ID を含むキーは無視されること"""
-        self.client.login(username="admin", password="AdminPass1!")
+        self.login_as_admin()
         response = self.client.post(reverse("approval"), {
-            "status_paid_leave_1": "1",
+            "status_paid_leave_1": APPROVED,
             "csrfmiddlewaretoken": "dummy",
         })
         self.assertRedirects(response, reverse("approval"))
 
-        self.paid_leave.refresh_from_db()
-        self.assertEqual(self.paid_leave.status, self.pending)
+        status, _ = status_and_approver(self.paid_leave)
+        self.assertEqual(status, workflow_status(PENDING))
 
     def test_post_ignores_unknown_id(self):
         """存在しない ID は無視され、エラーにならないこと"""
-        self.client.login(username="admin", password="AdminPass1!")
-        response = self.client.post(reverse("approval"), {"status_999999": "1"})
+        self.login_as_admin()
+        response = self.client.post(reverse("approval"), {"status_999999": APPROVED})
         self.assertRedirects(response, reverse("approval"))
 
     def test_post_ignores_unrelated_key(self):
         """status_ 以外のキーは無視されること"""
-        self.client.login(username="admin", password="AdminPass1!")
-        response = self.client.post(reverse("approval"), {"comment_1": "1"})
+        self.login_as_admin()
+        response = self.client.post(reverse("approval"), {"comment_1": APPROVED})
         self.assertRedirects(response, reverse("approval"))
+
+    def test_post_processes_multiple_requests(self):
+        """一度の POST で承認と却下を混在させて処理できること"""
+        other = create_paid_leave(self.user)
+
+        self.login_as_admin()
+        self.client.post(reverse("approval"), {
+            f"status_{self.paid_leave.id}": APPROVED,
+            f"status_{other.id}": REJECTED,
+        })
+
+        self.assertEqual(
+            status_and_approver(self.paid_leave), (workflow_status(APPROVED), self.admin)
+        )
+        self.assertEqual(status_and_approver(other), (workflow_status(REJECTED), self.admin))
+
+    def test_processed_request_disappears_from_list(self):
+        """承認した申請は、次の表示で一覧から消えること"""
+        self.login_as_admin()
+        self.client.post(reverse("approval"), {f"status_{self.paid_leave.id}": APPROVED})
+
+        response = self.client.get(reverse("approval"))
+        self.assertEqual(len(response.context["pending_list"]), 0)
+
+    def test_post_rolls_back_when_processing_fails(self):
+        """途中で例外が発生した場合、先に処理した申請の変更も取り消されること"""
+        other = create_paid_leave(self.user)
+        original_approve = PaidLeaveEntry.approve
+        call_count = {"value": 0}
+
+        def approve_then_fail(request_id, status_code, approver):
+            call_count["value"] += 1
+            if call_count["value"] == 2:
+                raise RuntimeError("simulated failure")
+            return original_approve(request_id, status_code, approver)
+
+        self.login_as_admin()
+        with patch.object(PaidLeaveEntry, "approve", side_effect=approve_then_fail):
+            with self.assertRaises(RuntimeError):
+                self.client.post(reverse("approval"), {
+                    f"status_{self.paid_leave.id}": APPROVED,
+                    f"status_{other.id}": APPROVED,
+                })
+
+        self.assertEqual(call_count["value"], 2)
+        self.assertEqual(status_and_approver(self.paid_leave), (workflow_status(PENDING), None))
+        self.assertEqual(status_and_approver(other), (workflow_status(PENDING), None))
+
+
+# ------------------------------------------------------------------ Usecase
+
+class TestPaidLeaveEntry(WorkflowTestCase):
+    """PaidLeaveEntry の申請・承認処理"""
+
+    def test_create_request_creates_pending_request(self):
+        """ステータス Pending、承認者なしで作成されること"""
+        PaidLeaveEntry.create_request(self.user, {
+            "start_date": date(2024, 9, 1),
+            "end_date": date(2024, 9, 2),
+            "reason": "rest",
+        })
+
+        paid_leave = find_paid_leaves(self.user).get()
+        self.assertEqual(status_and_approver(paid_leave), (workflow_status(PENDING), None))
+
+    def test_approve_rejects_invalid_code(self):
+        """承認・却下以外のコードでは ValueError を送出し、何も変更しないこと"""
+        paid_leave = create_paid_leave(self.user)
+
+        for code in [PENDING, "3"]:
+            with self.subTest(code=code):
+                with self.assertRaises(ValueError):
+                    PaidLeaveEntry.approve(paid_leave.id, code, self.admin)
+
+        self.assertEqual(status_and_approver(paid_leave), (workflow_status(PENDING), None))
+
+    def test_approve_unknown_id_returns_false(self):
+        """存在しない ID では False を返すこと"""
+        self.assertFalse(PaidLeaveEntry.approve(999999, APPROVED, self.admin))
+
+    def test_pending_returns_only_pending_requests(self):
+        """Pending の申請のみを返すこと"""
+        pending = create_paid_leave(self.user, PENDING)
+        create_paid_leave(self.user, APPROVED, approver=self.admin)
+        create_paid_leave(self.user, REJECTED, approver=self.admin)
+
+        self.assertEqual([data.id for data in PaidLeaveEntry.pending()], [pending.id])
+
+
+# ------------------------------------------------------------------ Model
+
+class TestPaidLeaveModel(WorkflowTestCase):
+    """PaidLeave の表示と、参照先の削除時の動作"""
+
+    def test_str(self):
+        """[申請者] 開始日 - 終了日 の形式であること"""
+        paid_leave = create_paid_leave(self.user)
+        self.assertEqual(str(paid_leave), "[testuser] 2024-06-01 - 2024-06-02")
+
+    def test_deleting_applicant_deletes_request(self):
+        """申請者を削除すると申請も削除されること"""
+        applicant = User.objects.create_user(user_id="U00002", username="applicant", password="SecurePass1!")
+        create_paid_leave(applicant)
+
+        applicant.delete()
+        self.assertFalse(PaidLeave.objects.filter(user_id="U00002").exists())
+
+    def test_deleting_approver_keeps_request(self):
+        """承認者を削除しても申請は残り、承認者が空になること"""
+        approver = User.objects.create_user(user_id="A00002", username="approver", password="SecurePass1!")
+        paid_leave = create_paid_leave(self.user, APPROVED, approver=approver)
+
+        approver.delete()
+        self.assertEqual(status_and_approver(paid_leave), (workflow_status(APPROVED), None))
+
+    def test_status_in_use_cannot_be_deleted(self):
+        """申請が参照しているステータスは削除できないこと"""
+        create_paid_leave(self.user)
+        with self.assertRaises(ProtectedError):
+            workflow_status(PENDING).delete()
