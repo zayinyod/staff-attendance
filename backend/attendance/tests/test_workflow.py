@@ -4,9 +4,12 @@
 申請データの作成と、ステータス・承認者の取得はヘルパー関数に集約する。
 テーブル構成を変更する際は、ヘルパー関数のみを修正すればよいようにするため。
 """
-from datetime import date
+from datetime import date, datetime, timezone as dt_timezone
 from unittest.mock import patch
+from django.db import IntegrityError, connection
+from django.db.migrations.executor import MigrationExecutor
 from django.db.models import ProtectedError
+from django.test import TransactionTestCase
 from django.urls import reverse
 from attendance.models import CodeMaster, PaidLeave, User, Workflow
 from attendance.tests.test_views import BaseViewTestCase
@@ -323,6 +326,18 @@ class TestPaidLeaveEntry(WorkflowTestCase):
         paid_leave = find_paid_leaves(self.user).get()
         self.assertEqual(status_and_approver(paid_leave), (workflow_status(PENDING), None))
 
+    def test_create_request_sets_paid_leave_type(self):
+        """種別が Paid Leave の共通テーブルと、詳細テーブルが 1 件ずつ作成されること"""
+        PaidLeaveEntry.create_request(self.user, {
+            "start_date": date(2024, 9, 1),
+            "end_date": date(2024, 9, 2),
+            "reason": "",
+        })
+
+        workflow = Workflow.objects.get(user=self.user)
+        self.assertEqual(workflow.workflow_type, workflow_type(PAID_LEAVE_TYPE))
+        self.assertEqual(workflow.paidleave.start_date, date(2024, 9, 1))
+
 
 class TestWorkflowApproval(WorkflowTestCase):
     """WorkflowApproval の承認処理"""
@@ -383,3 +398,111 @@ class TestPaidLeaveModel(WorkflowTestCase):
         create_paid_leave(self.user)
         with self.assertRaises(ProtectedError):
             workflow_status(PENDING).delete()
+
+
+class TestWorkflowModel(WorkflowTestCase):
+    """Workflow と詳細テーブルの関係"""
+
+    def test_str(self):
+        """[ID] 種別 (申請者) の形式であること"""
+        workflow = create_paid_leave(self.user)
+        self.assertEqual(str(workflow), f"[{workflow.id}] Paid Leave (testuser)")
+
+    def test_detail_is_one_to_one(self):
+        """1 件のワークフローに同じ種別の詳細を 2 件結び付けられないこと"""
+        workflow = create_paid_leave(self.user)
+        with self.assertRaises(IntegrityError):
+            PaidLeave.objects.create(workflow=workflow)
+
+    def test_deleting_workflow_deletes_detail(self):
+        """ワークフローを削除すると詳細も削除されること"""
+        workflow = create_paid_leave(self.user)
+
+        workflow.delete()
+        self.assertFalse(PaidLeave.objects.exists())
+
+    def test_workflow_type_in_use_cannot_be_deleted(self):
+        """ワークフローが参照している種別は削除できないこと"""
+        create_paid_leave(self.user)
+        with self.assertRaises(ProtectedError):
+            workflow_type(PAID_LEAVE_TYPE).delete()
+
+
+# ------------------------------------------------------------------ データ移行
+
+class TestWorkflowDataMigration(TransactionTestCase):
+    """0018〜0020 で PaidLeave の共通項目が Workflow に移ること"""
+
+    # 終了時の flush で消えるマイグレーション投入データ [CodeMaster] を復元する
+    serialized_rollback = True
+
+    migrate_from = [("attendance", "0017_alter_clock_clock_alter_clock_location")]
+    migrate_to = [("attendance", "0020_remove_workflow_fields_from_details")]
+
+    def setUp(self):
+        executor = MigrationExecutor(connection)
+        executor.migrate(self.migrate_from)
+        self.old_apps = executor.loader.project_state(self.migrate_from).apps
+
+    def tearDown(self):
+        executor = MigrationExecutor(connection)
+        executor.loader.build_graph()
+        executor.migrate(executor.loader.graph.leaf_nodes())
+
+    def migrate_to_latest(self):
+        executor = MigrationExecutor(connection)
+        executor.loader.build_graph()
+        executor.migrate(self.migrate_to)
+        return executor.loader.project_state(self.migrate_to).apps
+
+    def test_paid_leave_is_moved_to_workflow(self):
+        """ID・申請者・ステータス・承認者・作成日時が引き継がれること"""
+        OldUser = self.old_apps.get_model("attendance", "User")
+        OldCodeMaster = self.old_apps.get_model("attendance", "CodeMaster")
+        OldPaidLeave = self.old_apps.get_model("attendance", "PaidLeave")
+
+        applicant = OldUser.objects.create(user_id="U00009", username="applicant", password="x")
+        approver = OldUser.objects.create(user_id="A00009", username="approver", password="x")
+        pending = OldCodeMaster.objects.get(code_type="workflow_status", code=PENDING)
+        approved = OldCodeMaster.objects.get(code_type="workflow_status", code=APPROVED)
+
+        old_pending = OldPaidLeave.objects.create(
+            id=5, user=applicant, status=pending,
+            start_date=date(2024, 6, 1), end_date=date(2024, 6, 2), reason="first",
+        )
+        old_approved = OldPaidLeave.objects.create(
+            id=8, user=applicant, status=approved, approver=approver,
+            start_date=date(2024, 7, 1), end_date=date(2024, 7, 1), reason=None,
+        )
+        created_at = datetime(2024, 5, 1, 9, 0, tzinfo=dt_timezone.utc)
+        updated_at = datetime(2024, 5, 2, 10, 0, tzinfo=dt_timezone.utc)
+        OldPaidLeave.objects.filter(id=old_approved.id).update(created_at=created_at, updated_at=updated_at)
+
+        new_apps = self.migrate_to_latest()
+        NewWorkflow = new_apps.get_model("attendance", "Workflow")
+        NewPaidLeave = new_apps.get_model("attendance", "PaidLeave")
+
+        self.assertEqual(list(NewWorkflow.objects.order_by("id").values_list("id", flat=True)), [5, 8])
+
+        moved_pending = NewWorkflow.objects.get(id=old_pending.id)
+        self.assertEqual(moved_pending.workflow_type.code_type, "workflow_type")
+        self.assertEqual(moved_pending.workflow_type.code, PAID_LEAVE_TYPE)
+        self.assertEqual(moved_pending.user_id, "U00009")
+        self.assertEqual(moved_pending.status.code, PENDING)
+        self.assertIsNone(moved_pending.approver_id)
+
+        moved_approved = NewWorkflow.objects.get(id=old_approved.id)
+        self.assertEqual(moved_approved.status.code, APPROVED)
+        self.assertEqual(moved_approved.approver_id, "A00009")
+        self.assertEqual(moved_approved.created_at, created_at)
+        self.assertEqual(moved_approved.updated_at, updated_at)
+
+        detail = NewPaidLeave.objects.get(workflow_id=old_approved.id)
+        self.assertEqual(detail.start_date, date(2024, 7, 1))
+        self.assertIsNone(detail.reason)
+
+        # 移行後の採番が既存の ID と重複しないこと
+        new_workflow = NewWorkflow.objects.create(
+            workflow_type=moved_pending.workflow_type, user_id="U00009", status=moved_pending.status,
+        )
+        self.assertGreater(new_workflow.id, 8)
